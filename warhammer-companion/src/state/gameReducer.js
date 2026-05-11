@@ -33,14 +33,23 @@ const initialState = {
 
   // Battle Tracker
   currentRound: 1,
+  currentTurn: 1,        // whose turn it is (1 or 2) — I Go, You Go
   currentPhaseIndex: 0,
-  // battleUnits: { [instanceId]: { ...unitData, currentWounds, destroyed, notes } }
+  // battleUnits: { [instanceId]: { ...unitData, currentWounds, destroyed, notes, battleShocked } }
   battleUnits: {},
 };
 
 let instanceCounter = 0;
 function makeInstanceId(unitId) {
   return `${unitId}_${++instanceCounter}`;
+}
+
+function clearBattleShockForPlayer(battleUnits, player) {
+  const updated = {};
+  for (const [id, unit] of Object.entries(battleUnits)) {
+    updated[id] = unit.owner === player ? { ...unit, battleShocked: false } : unit;
+  }
+  return updated;
 }
 
 export function gameReducer(state, action) {
@@ -91,6 +100,7 @@ export function gameReducer(state, action) {
             currentWounds: unit.wounds,
             destroyed: false,
             notes: '',
+            battleShocked: false,
           };
         });
       };
@@ -102,6 +112,7 @@ export function gameReducer(state, action) {
         appPhase: APP_PHASES.BATTLE_TRACKER,
         battleUnits,
         currentRound: 1,
+        currentTurn: 1,
         currentPhaseIndex: 0,
       };
     }
@@ -110,14 +121,44 @@ export function gameReducer(state, action) {
     case 'NEXT_PHASE': {
       const nextIndex = state.currentPhaseIndex + 1;
       if (nextIndex >= PHASES.length) {
-        // End of round
-        const nextRound = state.currentRound + 1;
-        if (nextRound > state.totalRounds) {
-          return { ...state, appPhase: APP_PHASES.GAME_SUMMARY };
+        // End of this player's turn
+        if (state.currentTurn === 1) {
+          // Switch to Player 2's turn; clear their battle shock (new Command Phase)
+          return {
+            ...state,
+            currentTurn: 2,
+            currentPhaseIndex: 0,
+            battleUnits: clearBattleShockForPlayer(state.battleUnits, 2),
+          };
+        } else {
+          // End of Player 2's turn — end of round
+          const nextRound = state.currentRound + 1;
+          if (nextRound > state.totalRounds) {
+            return { ...state, appPhase: APP_PHASES.GAME_SUMMARY };
+          }
+          // New round: Player 1's turn; clear their battle shock
+          return {
+            ...state,
+            currentRound: nextRound,
+            currentTurn: 1,
+            currentPhaseIndex: 0,
+            battleUnits: clearBattleShockForPlayer(state.battleUnits, 1),
+          };
         }
-        return { ...state, currentRound: nextRound, currentPhaseIndex: 0 };
       }
       return { ...state, currentPhaseIndex: nextIndex };
+    }
+    case 'SET_BATTLE_SHOCKED': {
+      const { instanceId, battleShocked } = action;
+      const unit = state.battleUnits[instanceId];
+      if (!unit) return state;
+      return {
+        ...state,
+        battleUnits: {
+          ...state.battleUnits,
+          [instanceId]: { ...unit, battleShocked },
+        },
+      };
     }
     case 'SET_WOUNDS': {
       const { instanceId, wounds } = action;
