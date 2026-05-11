@@ -1,0 +1,196 @@
+import { useState } from 'react';
+import { PHASES } from '../state/gameReducer.js';
+import PhaseGuide from './PhaseGuide.jsx';
+import UnitCard from './UnitCard.jsx';
+import CombatCalculator from './CombatCalculator.jsx';
+
+const CALC_PHASES = ['Shooting Phase', 'Fight Phase'];
+
+export default function BattleTracker({ state, dispatch }) {
+  const { battleUnits, currentRound, currentPhaseIndex, totalRounds, mission } = state;
+  const [calcPlayer, setCalcPlayer] = useState(1);
+  const [showDestroyed, setShowDestroyed] = useState(false);
+
+  const currentPhase = PHASES[currentPhaseIndex];
+  const showCalc = CALC_PHASES.includes(currentPhase);
+
+  const allUnits = Object.values(battleUnits);
+  const p1Active = allUnits.filter((u) => u.owner === 1 && !u.destroyed);
+  const p1Dead   = allUnits.filter((u) => u.owner === 1 && u.destroyed);
+  const p2Active = allUnits.filter((u) => u.owner === 2 && !u.destroyed);
+  const p2Dead   = allUnits.filter((u) => u.owner === 2 && u.destroyed);
+
+  const isLastPhase = currentPhaseIndex === PHASES.length - 1;
+  const isLastRound = currentRound === totalRounds;
+
+  return (
+    <div>
+      {/* Phase Banner */}
+      <div className="phase-banner">
+        <div>
+          <div className="round-label">Battle Round</div>
+          <div className="round-num">{currentRound}</div>
+          <div className="round-label">of {totalRounds}</div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: 'var(--font-head)', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+            Active Phase
+          </div>
+          <div className="phase-name">{currentPhase}</div>
+          <div style={{ display: 'flex', gap: '4px', marginTop: '8px', flexWrap: 'wrap' }}>
+            {PHASES.map((ph, i) => (
+              <span
+                key={ph}
+                style={{
+                  fontFamily: 'var(--font-head)',
+                  fontSize: '10px',
+                  padding: '2px 7px',
+                  borderRadius: '2px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  background: i === currentPhaseIndex ? 'var(--gold)' : 'var(--surface-2)',
+                  color: i === currentPhaseIndex ? '#1a1208' : i < currentPhaseIndex ? 'var(--border-em)' : 'var(--text-muted)',
+                  border: `1px solid ${i === currentPhaseIndex ? 'var(--gold)' : 'var(--border-sub)'}`,
+                }}
+              >
+                {ph.replace(' Phase', '')}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => dispatch({ type: 'NEXT_PHASE' })}
+          >
+            {isLastPhase && isLastRound
+              ? 'End Game →'
+              : isLastPhase
+              ? `Begin Round ${currentRound + 1} →`
+              : `Next Phase →`}
+          </button>
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => dispatch({ type: 'END_GAME' })}
+          >
+            End Game Early
+          </button>
+        </div>
+      </div>
+
+      {/* Phase Guide */}
+      <PhaseGuide phaseIndex={currentPhaseIndex} />
+
+      {/* Unit Battlefield Grid */}
+      <div className="battle-grid">
+        {/* Player 1 */}
+        <div>
+          <div
+            style={{
+              background: 'var(--surface-2)',
+              border: '1px solid var(--border-em)',
+              borderTop: '3px solid var(--warning)',
+              padding: '10px 14px',
+              marginBottom: '10px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <h3 className="heading" style={{ fontSize: '16px' }}>Player 1</h3>
+            <span style={{ fontFamily: 'var(--font-head)', fontSize: '12px', color: 'var(--text-muted)' }}>
+              {p1Active.length} active · {p1Dead.length} destroyed
+            </span>
+          </div>
+          {p1Active.length === 0 && (
+            <p className="text-muted text-sm" style={{ padding: '8px' }}>All units destroyed.</p>
+          )}
+          {p1Active.map((unit) => (
+            <UnitCard key={unit.instanceId} unit={unit} dispatch={dispatch} />
+          ))}
+          {showDestroyed && p1Dead.map((unit) => (
+            <UnitCard key={unit.instanceId} unit={unit} dispatch={dispatch} />
+          ))}
+        </div>
+
+        {/* Player 2 */}
+        <div>
+          <div
+            style={{
+              background: 'var(--surface-2)',
+              border: '1px solid var(--border-em)',
+              borderTop: '3px solid var(--danger)',
+              padding: '10px 14px',
+              marginBottom: '10px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <h3 className="heading" style={{ fontSize: '16px' }}>Player 2</h3>
+            <span style={{ fontFamily: 'var(--font-head)', fontSize: '12px', color: 'var(--text-muted)' }}>
+              {p2Active.length} active · {p2Dead.length} destroyed
+            </span>
+          </div>
+          {p2Active.length === 0 && (
+            <p className="text-muted text-sm" style={{ padding: '8px' }}>All units destroyed.</p>
+          )}
+          {p2Active.map((unit) => (
+            <UnitCard key={unit.instanceId} unit={unit} dispatch={dispatch} />
+          ))}
+          {showDestroyed && p2Dead.map((unit) => (
+            <UnitCard key={unit.instanceId} unit={unit} dispatch={dispatch} />
+          ))}
+        </div>
+      </div>
+
+      {/* Show/hide destroyed toggle */}
+      {(p1Dead.length > 0 || p2Dead.length > 0) && (
+        <div style={{ marginTop: '8px', marginBottom: '16px' }}>
+          <button
+            className="btn btn-sm"
+            onClick={() => setShowDestroyed((v) => !v)}
+          >
+            {showDestroyed ? '▲ Hide' : '▼ Show'} Destroyed Units ({p1Dead.length + p2Dead.length})
+          </button>
+        </div>
+      )}
+
+      {/* Combat Calculator (Shooting & Fight phases only) */}
+      {showCalc && (
+        <div style={{ marginTop: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '4px', alignItems: 'center' }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-head)',
+                fontSize: '12px',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+              }}
+            >
+              Calculator: Attacking as
+            </span>
+            <button
+              className={`btn btn-sm ${calcPlayer === 1 ? 'btn-primary' : ''}`}
+              onClick={() => setCalcPlayer(1)}
+            >
+              Player 1
+            </button>
+            <button
+              className={`btn btn-sm ${calcPlayer === 2 ? 'btn-primary' : ''}`}
+              onClick={() => setCalcPlayer(2)}
+            >
+              Player 2
+            </button>
+          </div>
+          <CombatCalculator
+            battleUnits={battleUnits}
+            dispatch={dispatch}
+            player={calcPlayer}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
