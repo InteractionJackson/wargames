@@ -244,6 +244,7 @@ label {
 .badge-vehicle    { background: #1a2030; color: #6080c0; border: 1px solid #304870; }
 .badge-monster    { background: #3a2010; color: #c07830; border: 1px solid #6a4010; }
 .badge-destroyed  { background: #3a1010; color: var(--danger); border: 1px solid var(--danger); }
+.badge-shocked    { background: #1a1a30; color: #8080e0; border: 1px solid #4040a0; }
 .badge-active     { background: #1a2a10; color: var(--warning); border: 1px solid var(--warning); }
 .badge-gold       { background: #2a2010; color: var(--gold); border: 1px solid var(--gold-dim); }
 

@@ -21,7 +21,7 @@ function formatDamage(d) {
   return String(d);
 }
 
-export default function UnitCard({ unit, dispatch }) {
+export default function UnitCard({ unit, dispatch, isMoralePhase = false }) {
   const [expanded, setExpanded] = useState(false);
   const [editingNotes, setEditingNotes] = useState(false);
 
@@ -57,6 +57,7 @@ export default function UnitCard({ unit, dispatch }) {
             {unit.invulnSave}+INV
           </span>
         )}
+        {unit.battleShocked && <span className="badge badge-shocked">Battle Shocked</span>}
         {unit.destroyed && <span className="badge badge-destroyed">Destroyed</span>}
         <button
           className="btn btn-sm btn-icon"
@@ -151,6 +152,25 @@ export default function UnitCard({ unit, dispatch }) {
           </div>
         )}
       </div>
+
+      {/* Battle Shock toggle — Morale Phase only */}
+      {isMoralePhase && !unit.destroyed && (
+        <div style={{ marginTop: '6px' }}>
+          <button
+            className={`btn btn-sm${unit.battleShocked ? ' btn-danger' : ''}`}
+            style={{ width: '100%', justifyContent: 'center' }}
+            onClick={() =>
+              dispatch({
+                type: 'SET_BATTLE_SHOCKED',
+                instanceId: unit.instanceId,
+                battleShocked: !unit.battleShocked,
+              })
+            }
+          >
+            {unit.battleShocked ? '✕ Remove Battle Shock' : '⚡ Mark Battle Shocked'}
+          </button>
+        </div>
+      )}
 
       {/* Expanded stat block */}
       {expanded && (
