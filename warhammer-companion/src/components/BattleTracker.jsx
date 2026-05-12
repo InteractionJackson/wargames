@@ -125,10 +125,11 @@ export default function BattleTracker({ state, dispatch }) {
                   unit={unit}
                   dispatch={dispatch}
                   isMoralePhase={isMoralePhase && isActive}
+                  currentPhase={isActive ? currentPhase : null}
                 />
               ))}
               {showDestroyed && dead.map((unit) => (
-                <UnitCard key={unit.instanceId} unit={unit} dispatch={dispatch} isMoralePhase={false} />
+                <UnitCard key={unit.instanceId} unit={unit} dispatch={dispatch} isMoralePhase={false} currentPhase={null} />
               ))}
             </div>
           );
