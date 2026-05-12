@@ -360,6 +360,106 @@ label {
   letter-spacing: 0.08em;
 }
 
+/* ── Stat highlight (active phase) ───────────────────── */
+.stat-cell-highlight {
+  background: rgba(201, 168, 76, 0.12);
+  border-right-color: var(--gold-dim);
+  box-shadow: inset 0 0 0 1px var(--gold-dim);
+}
+
+.stat-cell-highlight .stat-cell-label {
+  color: var(--gold);
+}
+
+.stat-cell-highlight .stat-cell-value {
+  color: var(--gold);
+}
+
+/* ── Weapon row states ────────────────────────────────── */
+.weapon-row-dim td {
+  opacity: 0.3;
+}
+
+.weapon-row-highlight td {
+  background: rgba(201, 168, 76, 0.06);
+}
+
+/* ── Phase hint strip ─────────────────────────────────── */
+.phase-hint {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 5px 0;
+  padding: 5px 8px;
+  background: rgba(201, 168, 76, 0.07);
+  border-left: 2px solid var(--gold-dim);
+  font-family: var(--font-head);
+}
+
+.phase-hint-dim {
+  background: var(--surface-2);
+  border-left-color: var(--border-sub);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.phase-hint-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.phase-hint-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.phase-hint-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Tooltip ──────────────────────────────────────────── */
+.tooltip-wrap {
+  position: relative;
+  display: inline-block;
+  cursor: help;
+}
+
+.tooltip-box {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-3, #2a2410);
+  border: 1px solid var(--gold-dim);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 5px 8px;
+  white-space: nowrap;
+  z-index: 200;
+  pointer-events: none;
+  max-width: 260px;
+  white-space: normal;
+}
+
+/* Dotted underline on abbreviated terms */
+.abbr {
+  border-bottom: 1px dotted var(--text-muted);
+}
+
 /* ── Phase Banner ─────────────────────────────────────── */
 .phase-banner {
   background: var(--surface-1);
