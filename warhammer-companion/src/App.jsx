@@ -37,7 +37,7 @@ export default function App() {
         >
           ✦
         </div>
-        <h1>Warhammer 40,000 Companion</h1>
+        <h1>40K grump</h1>
         <div className="phase-indicator">
           <span>{PHASE_LABELS[appPhase]}</span>
         </div>
@@ -89,7 +89,7 @@ export default function App() {
             letterSpacing: '0.08em',
           }}
         >
-          WH40K 10th Edition Companion
+          WH40K Companion app
         </span>
         <span
           style={{
