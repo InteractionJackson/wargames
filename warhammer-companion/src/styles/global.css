@@ -390,7 +390,16 @@ label {
 .stratagem-tab.active {
   color: var(--gold);
   border-bottom-color: var(--gold);
-  background: rgba(201, 168, 76, 0.06);
+}
+
+/* Motion sliding background for active tab */
+.stratagem-tab-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(201, 168, 76, 0.08);
+  border-bottom: 2px solid var(--gold);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .stratagem-tab-count {

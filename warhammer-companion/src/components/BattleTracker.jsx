@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PHASES } from '../state/gameReducer.js';
 import PhaseGuide from './PhaseGuide.jsx';
 import UnitCard from './UnitCard.jsx';
@@ -60,7 +61,19 @@ export default function BattleTracker({ state, dispatch }) {
       <div className="phase-banner" style={{ borderColor: activeColor }}>
         <div>
           <div className="round-label">Battle Round</div>
-          <div className="round-num" style={{ color: activeColor }}>{currentRound}</div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentRound}
+              className="round-num"
+              style={{ color: activeColor }}
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ duration: 0.2 }}
+            >
+              {currentRound}
+            </motion.div>
+          </AnimatePresence>
           <div className="round-label">of {totalRounds}</div>
         </div>
         <div style={{ flex: 1 }}>
@@ -73,17 +86,32 @@ export default function BattleTracker({ state, dispatch }) {
               <span
                 key={ph}
                 style={{
+                  position: 'relative',
                   fontFamily: 'var(--font-head)',
                   fontSize: '10px',
                   padding: '2px 7px',
                   borderRadius: '2px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.04em',
-                  background: i === currentPhaseIndex ? activeColor : 'var(--surface-2)',
                   color: i === currentPhaseIndex ? '#1a1208' : i < currentPhaseIndex ? 'var(--border-em)' : 'var(--text-muted)',
                   border: `1px solid ${i === currentPhaseIndex ? activeColor : 'var(--border-sub)'}`,
+                  background: i === currentPhaseIndex ? 'transparent' : 'var(--surface-2)',
+                  zIndex: 0,
                 }}
               >
+                {i === currentPhaseIndex && (
+                  <motion.span
+                    layoutId="phase-pill-bg"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: activeColor,
+                      borderRadius: '2px',
+                      zIndex: -1,
+                    }}
+                    transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                  />
+                )}
                 {ph.replace(' Phase', '')}
               </span>
             ))}
@@ -184,17 +212,19 @@ export default function BattleTracker({ state, dispatch }) {
       )}
 
       {/* Stratagem Panel */}
-      {showStratagems && (
-        <StratagemPanel
-          currentPhase={currentPhase}
-          activePlayer={currentTurn}
-          cp={cp}
-          battleUnits={battleUnits}
-          activeStratagems={activeStratagems}
-          dispatch={dispatch}
-          onClose={() => setShowStratagems(false)}
-        />
-      )}
+      <AnimatePresence>
+        {showStratagems && (
+          <StratagemPanel
+            currentPhase={currentPhase}
+            activePlayer={currentTurn}
+            cp={cp}
+            battleUnits={battleUnits}
+            activeStratagems={activeStratagems}
+            dispatch={dispatch}
+            onClose={() => setShowStratagems(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

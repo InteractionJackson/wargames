@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import Tooltip from './Tooltip.jsx';
 
 const TYPE_BADGE = {
@@ -202,7 +203,19 @@ export default function UnitCard({ unit, dispatch, isCommandPhase = false, curre
             <span className="badge badge-gold" style={{ cursor: 'help' }}>{unit.invulnSave}+<span className="abbr">INV</span></span>
           </Tooltip>
         )}
-        {unit.battleShocked && <span className="badge badge-shocked">Battle Shocked</span>}
+        <AnimatePresence>
+          {unit.battleShocked && (
+            <motion.span
+              className="badge badge-shocked"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 24 }}
+            >
+              Battle Shocked
+            </motion.span>
+          )}
+        </AnimatePresence>
         {activeStratagems.map((s, i) => (
           <span key={i} className="badge badge-stratagem">⚡ {s.badgeLabel}</span>
         ))}
@@ -224,10 +237,14 @@ export default function UnitCard({ unit, dispatch, isCommandPhase = false, curre
           </span>
           <div className="wounds-bar">
             {Array.from({ length: unit.wounds }).map((_, i) => (
-              <div
+              <motion.div
                 key={i}
                 className={`wound-pip${i >= unit.currentWounds ? ' lost' : ''}`}
-                style={i < unit.currentWounds ? { background: woundColor } : {}}
+                animate={{
+                  scale: i >= unit.currentWounds ? 0.7 : 1,
+                  background: i < unit.currentWounds ? woundColor : 'var(--surface-3)',
+                }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               />
             ))}
           </div>
@@ -280,8 +297,15 @@ export default function UnitCard({ unit, dispatch, isCommandPhase = false, curre
       )}
 
       {/* Expanded stat block */}
+      <AnimatePresence>
       {expanded && (
-        <div style={{ marginTop: '8px' }}>
+        <motion.div
+          style={{ marginTop: '8px', overflow: 'hidden' }}
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.22, ease: 'easeInOut' }}
+        >
           <hr className="divider" />
 
           {/* Stat row */}
@@ -348,8 +372,9 @@ export default function UnitCard({ unit, dispatch, isCommandPhase = false, curre
               </span>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }
