@@ -168,7 +168,7 @@ function PhaseHint({ unit, currentPhase }) {
   return null;
 }
 
-export default function UnitCard({ unit, dispatch, isMoralePhase = false, currentPhase = null }) {
+export default function UnitCard({ unit, dispatch, isMoralePhase = false, currentPhase = null, activeStratagems = [] }) {
   const [expanded, setExpanded] = useState(false);
   const [editingNotes, setEditingNotes] = useState(false);
 
@@ -208,6 +208,9 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
           </Tooltip>
         )}
         {unit.battleShocked && <span className="badge badge-shocked">Battle Shocked</span>}
+        {activeStratagems.map((s, i) => (
+          <span key={i} className="badge badge-stratagem">⚡ {s.badgeLabel}</span>
+        ))}
         {unit.destroyed && <span className="badge badge-destroyed">Destroyed</span>}
         <button
           className="btn btn-sm btn-icon"

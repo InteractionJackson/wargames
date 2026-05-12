@@ -3,12 +3,33 @@ import { PHASES } from '../state/gameReducer.js';
 import PhaseGuide from './PhaseGuide.jsx';
 import UnitCard from './UnitCard.jsx';
 import CombatCalculator from './CombatCalculator.jsx';
+import StratagemPanel from './StratagemPanel.jsx';
 
 const CALC_PHASES = ['Shooting Phase', 'Fight Phase'];
 
+function CpDisplay({ player, cp, dispatch, color }) {
+  const val = cp[player] || 0;
+  return (
+    <div className="cp-display" style={{ borderColor: color }}>
+      <span className="cp-label">P{player} CP</span>
+      <button
+        className="btn btn-sm btn-icon cp-btn"
+        onClick={() => dispatch({ type: 'ADJUST_CP', player, delta: -1 })}
+        disabled={val === 0}
+      >−</button>
+      <span className="cp-value" style={{ color }}>{val}</span>
+      <button
+        className="btn btn-sm btn-icon cp-btn"
+        onClick={() => dispatch({ type: 'ADJUST_CP', player, delta: 1 })}
+      >+</button>
+    </div>
+  );
+}
+
 export default function BattleTracker({ state, dispatch }) {
-  const { battleUnits, currentRound, currentTurn, currentPhaseIndex, totalRounds } = state;
+  const { battleUnits, currentRound, currentTurn, currentPhaseIndex, totalRounds, cp, activeStratagems } = state;
   const [showDestroyed, setShowDestroyed] = useState(false);
+  const [showStratagems, setShowStratagems] = useState(false);
 
   const currentPhase = PHASES[currentPhaseIndex];
   const isMoralePhase = currentPhase === 'Morale Phase';
@@ -67,19 +88,28 @@ export default function BattleTracker({ state, dispatch }) {
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
-          <button
-            className="btn btn-primary"
-            onClick={() => dispatch({ type: 'NEXT_PHASE' })}
-          >
+          <button className="btn btn-primary" onClick={() => dispatch({ type: 'NEXT_PHASE' })}>
             {nextButtonLabel()}
           </button>
-          <button
-            className="btn btn-sm btn-danger"
-            onClick={() => dispatch({ type: 'END_GAME' })}
-          >
+          <button className="btn btn-sm btn-danger" onClick={() => dispatch({ type: 'END_GAME' })}>
             End Game Early
           </button>
         </div>
+      </div>
+
+      {/* CP Bar — always visible */}
+      <div className="cp-bar">
+        <CpDisplay player={1} cp={cp} dispatch={dispatch} color="var(--warning)" />
+        <button
+          className={`btn btn-sm cp-stratagem-btn${activeStratagems.length > 0 ? ' has-active' : ''}`}
+          onClick={() => setShowStratagems(true)}
+        >
+          ⚡ Stratagems
+          {activeStratagems.length > 0 && (
+            <span className="cp-active-badge">{activeStratagems.length}</span>
+          )}
+        </button>
+        <CpDisplay player={2} cp={cp} dispatch={dispatch} color="var(--danger)" />
       </div>
 
       {/* Phase Guide */}
@@ -92,6 +122,8 @@ export default function BattleTracker({ state, dispatch }) {
           const dead   = player === 1 ? p1Dead   : p2Dead;
           const color  = player === 1 ? 'var(--warning)' : 'var(--danger)';
           const isActive = currentTurn === player;
+          // Stratagems affecting units owned by this player
+          const unitStratagems = activeStratagems.filter((s) => s.owner === player && s.instanceId);
           return (
             <div key={player}>
               <div
@@ -108,9 +140,7 @@ export default function BattleTracker({ state, dispatch }) {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <h3 className="heading" style={{ fontSize: '16px' }}>Player {player}</h3>
-                  {isActive && (
-                    <span className="badge badge-active">Active</span>
-                  )}
+                  {isActive && <span className="badge badge-active">Active</span>}
                 </div>
                 <span style={{ fontFamily: 'var(--font-head)', fontSize: '12px', color: 'var(--text-muted)' }}>
                   {active.length} active · {dead.length} destroyed
@@ -126,34 +156,41 @@ export default function BattleTracker({ state, dispatch }) {
                   dispatch={dispatch}
                   isMoralePhase={isMoralePhase && isActive}
                   currentPhase={isActive ? currentPhase : null}
+                  activeStratagems={unitStratagems.filter((s) => s.instanceId === unit.instanceId)}
                 />
               ))}
               {showDestroyed && dead.map((unit) => (
-                <UnitCard key={unit.instanceId} unit={unit} dispatch={dispatch} isMoralePhase={false} currentPhase={null} />
+                <UnitCard key={unit.instanceId} unit={unit} dispatch={dispatch} isMoralePhase={false} currentPhase={null} activeStratagems={[]} />
               ))}
             </div>
           );
         })}
       </div>
 
-      {/* Show/hide destroyed toggle */}
+      {/* Destroyed units toggle */}
       {(p1Dead.length > 0 || p2Dead.length > 0) && (
         <div style={{ marginTop: '8px', marginBottom: '16px' }}>
-          <button
-            className="btn btn-sm"
-            onClick={() => setShowDestroyed((v) => !v)}
-          >
+          <button className="btn btn-sm" onClick={() => setShowDestroyed((v) => !v)}>
             {showDestroyed ? '▲ Hide' : '▼ Show'} Destroyed Units ({p1Dead.length + p2Dead.length})
           </button>
         </div>
       )}
 
-      {/* Combat Calculator (Shooting & Fight phases only) */}
+      {/* Combat Calculator */}
       {showCalc && (
-        <CombatCalculator
+        <CombatCalculator battleUnits={battleUnits} dispatch={dispatch} player={currentTurn} />
+      )}
+
+      {/* Stratagem Panel */}
+      {showStratagems && (
+        <StratagemPanel
+          currentPhase={currentPhase}
+          activePlayer={currentTurn}
+          cp={cp}
           battleUnits={battleUnits}
+          activeStratagems={activeStratagems}
           dispatch={dispatch}
-          player={currentTurn}
+          onClose={() => setShowStratagems(false)}
         />
       )}
     </div>

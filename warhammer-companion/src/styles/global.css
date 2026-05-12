@@ -247,6 +247,279 @@ label {
 .badge-shocked    { background: #1a1a30; color: #8080e0; border: 1px solid #4040a0; }
 .badge-active     { background: #1a2a10; color: var(--warning); border: 1px solid var(--warning); }
 .badge-gold       { background: #2a2010; color: var(--gold); border: 1px solid var(--gold-dim); }
+.badge-stratagem  { background: #1a2830; color: #60b8e0; border: 1px solid #2a6888; }
+
+/* ── CP Bar ───────────────────────────────────────────── */
+.cp-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-em);
+  margin-bottom: 8px;
+}
+
+.cp-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid;
+  padding: 4px 10px;
+  background: var(--surface-1);
+}
+
+.cp-label {
+  font-family: var(--font-head);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.cp-value {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 24px;
+  text-align: center;
+}
+
+.cp-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.cp-stratagem-btn {
+  font-family: var(--font-head);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  position: relative;
+  padding: 6px 14px;
+  border: 1px solid var(--border-em);
+}
+
+.cp-stratagem-btn.has-active {
+  border-color: #60b8e0;
+  color: #60b8e0;
+}
+
+.cp-active-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #60b8e0;
+  color: #0a1a28;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+}
+
+/* ── Stratagem Panel ──────────────────────────────────── */
+.stratagem-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.stratagem-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border-em);
+  border-bottom: none;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.stratagem-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-em);
+  background: var(--surface-2);
+}
+
+.stratagem-panel-title {
+  font-family: var(--font-head);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+.stratagem-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-em);
+}
+
+.stratagem-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px;
+  font-family: var(--font-head);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.stratagem-tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+  background: rgba(201, 168, 76, 0.06);
+}
+
+.stratagem-tab-count {
+  background: var(--gold);
+  color: #1a1208;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 2px;
+  padding: 1px 5px;
+}
+
+.stratagem-filter-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-sub);
+}
+
+.stratagem-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stratagem-card {
+  border: 1px solid var(--border-sub);
+  padding: 10px 12px;
+  background: var(--surface-2);
+  opacity: 0.7;
+}
+
+.stratagem-card.stratagem-relevant {
+  border-color: var(--gold-dim);
+  background: rgba(201, 168, 76, 0.05);
+  opacity: 1;
+}
+
+.stratagem-card-top {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.stratagem-card-name {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stratagem-card-timing {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  margin-top: 2px;
+}
+
+.stratagem-cp-badge {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.stratagem-category-badge {
+  font-family: var(--font-head);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 5px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.stratagem-effect {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.stratagem-restriction {
+  font-size: 11px;
+  color: #c07830;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.stratagem-active-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stratagem-active-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #2a6888;
+  background: #1a2830;
+  padding: 10px 12px;
+}
+
+.stratagem-unit-picker {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-em);
+  background: var(--surface-2);
+}
+
+.stratagem-unit-picker-label {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.stratagem-unit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
 /* ── Stat Block ───────────────────────────────────────── */
 .stat-row {
