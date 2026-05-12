@@ -39,7 +39,6 @@ const PHASE_STAT_HIGHLIGHTS = {
   'Charge Phase':   ['M'],
   'Fight Phase':    ['WS', 'A'],
   'Command Phase':  ['OC', 'LD'],
-  'Morale Phase':   ['LD'],
 };
 
 // Dice notation tooltip map
@@ -70,11 +69,12 @@ function DiceValue({ val }) {
   return <>{str}</>;
 }
 
-function PhaseHint({ unit, currentPhase }) {
+function PhaseHint({ unit, currentPhase, isCommandPhase }) {
   if (!currentPhase || unit.destroyed) return null;
 
   const ranged = unit.weapons.filter((w) => w.type === 'ranged');
   const melee  = unit.weapons.filter((w) => w.type === 'melee');
+  const belowHalf = unit.currentWounds * 2 < unit.wounds;
 
   if (currentPhase === 'Movement Phase') {
     return (
@@ -143,23 +143,18 @@ function PhaseHint({ unit, currentPhase }) {
         </span>
         <span className="phase-hint-value">{unit.oc}</span>
         <span className="phase-hint-sub">
-          <Tooltip text="Leadership — if this unit fails a Battle Shock test it gets the Battle Shocked condition">
-            <span className="abbr">LD</span>
-          </Tooltip>
-          {' '}{unit.leadership}+ morale
-        </span>
-      </div>
-    );
-  }
-
-  if (currentPhase === 'Morale Phase') {
-    return (
-      <div className="phase-hint">
-        <span className="phase-hint-label">Battle Shock</span>
-        <span className="phase-hint-value">{unit.leadership}+</span>
-        <span className="phase-hint-sub">
-          Roll <Tooltip text="Roll two D6 and add them together (2–12)"><span className="abbr">2D6</span></Tooltip>
-          , pass on {unit.leadership} or less
+          {isCommandPhase && belowHalf ? (
+            <span style={{ color: 'var(--danger)', fontWeight: 700 }}>
+              ⚠ Below half strength — Battle Shock test required ({unit.leadership}+)
+            </span>
+          ) : (
+            <>
+              <Tooltip text="Leadership — if this unit fails a Battle Shock test it gets the Battle Shocked condition">
+                <span className="abbr">LD</span>
+              </Tooltip>
+              {' '}{unit.leadership}+ morale
+            </>
+          )}
         </span>
       </div>
     );
@@ -168,7 +163,7 @@ function PhaseHint({ unit, currentPhase }) {
   return null;
 }
 
-export default function UnitCard({ unit, dispatch, isMoralePhase = false, currentPhase = null, activeStratagems = [] }) {
+export default function UnitCard({ unit, dispatch, isCommandPhase = false, currentPhase = null, activeStratagems = [] }) {
   const [expanded, setExpanded] = useState(false);
   const [editingNotes, setEditingNotes] = useState(false);
 
@@ -248,7 +243,7 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
       )}
 
       {/* Phase hint — visible without expanding */}
-      <PhaseHint unit={unit} currentPhase={currentPhase} />
+      <PhaseHint unit={unit} currentPhase={currentPhase} isCommandPhase={isCommandPhase} />
 
       {/* Notes */}
       <div>
@@ -271,8 +266,8 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
         )}
       </div>
 
-      {/* Battle Shock toggle — Morale Phase only */}
-      {isMoralePhase && !unit.destroyed && (
+      {/* Battle Shock toggle — Command Phase, skip the very first Command Phase */}
+      {isCommandPhase && !unit.destroyed && (
         <div style={{ marginTop: '6px' }}>
           <button
             className={`btn btn-sm${unit.battleShocked ? ' btn-danger' : ''}`}

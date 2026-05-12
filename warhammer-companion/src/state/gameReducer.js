@@ -6,7 +6,6 @@ export const PHASES = [
   'Shooting Phase',
   'Charge Phase',
   'Fight Phase',
-  'Morale Phase',
 ];
 
 export const APP_PHASES = {
@@ -29,6 +28,7 @@ const initialState = {
   gameType: 'Matched Play',
   mission: null,
   totalRounds: 5,
+  firstPlayer: 1,
 
   // Battle Tracker
   currentRound: 1,
@@ -94,6 +94,8 @@ export function gameReducer(state, action) {
       return { ...state, mission: action.mission };
     case 'SET_TOTAL_ROUNDS':
       return { ...state, totalRounds: Math.max(1, Math.min(10, action.rounds)) };
+    case 'SET_FIRST_PLAYER':
+      return { ...state, firstPlayer: action.player };
     case 'START_BATTLE': {
       const battleUnits = {};
       const buildUnits = (army, owner) => {
@@ -109,15 +111,16 @@ export function gameReducer(state, action) {
       };
       buildUnits(state.player1Army, 1);
       buildUnits(state.player2Army, 2);
+      const fp = state.firstPlayer;
       return {
         ...state,
         appPhase: APP_PHASES.BATTLE_TRACKER,
         battleUnits,
         currentRound: 1,
-        currentTurn: 1,
+        currentTurn: fp,
         currentPhaseIndex: 0,
-        // Player 1 starts their Command Phase — both get 1 CP to start
-        cp: { 1: 1, 2: 0 },
+        // First player starts their Command Phase — they get 1 CP to start
+        cp: { 1: fp === 1 ? 1 : 0, 2: fp === 2 ? 1 : 0 },
         activeStratagems: [],
       };
     }

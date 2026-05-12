@@ -27,12 +27,14 @@ function CpDisplay({ player, cp, dispatch, color }) {
 }
 
 export default function BattleTracker({ state, dispatch }) {
-  const { battleUnits, currentRound, currentTurn, currentPhaseIndex, totalRounds, cp, activeStratagems } = state;
+  const { battleUnits, currentRound, currentTurn, currentPhaseIndex, totalRounds, cp, activeStratagems, firstPlayer } = state;
   const [showDestroyed, setShowDestroyed] = useState(false);
   const [showStratagems, setShowStratagems] = useState(false);
 
   const currentPhase = PHASES[currentPhaseIndex];
-  const isMoralePhase = currentPhase === 'Morale Phase';
+  const isCommandPhase = currentPhase === 'Command Phase';
+  // No Battle Shock on the very first Command Phase of the game
+  const isFirstCommandPhase = isCommandPhase && currentRound === 1 && currentTurn === firstPlayer;
   const showCalc = CALC_PHASES.includes(currentPhase);
 
   const allUnits = Object.values(battleUnits);
@@ -154,7 +156,7 @@ export default function BattleTracker({ state, dispatch }) {
                   key={unit.instanceId}
                   unit={unit}
                   dispatch={dispatch}
-                  isMoralePhase={isMoralePhase && isActive}
+                  isCommandPhase={isCommandPhase && isActive && !isFirstCommandPhase}
                   currentPhase={isActive ? currentPhase : null}
                   activeStratagems={unitStratagems.filter((s) => s.instanceId === unit.instanceId)}
                 />

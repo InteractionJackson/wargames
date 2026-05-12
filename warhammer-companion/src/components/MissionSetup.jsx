@@ -1,7 +1,7 @@
 import { GAME_TYPES, MISSIONS } from '../data/missions.js';
 
 export default function MissionSetup({ state, dispatch }) {
-  const { gameType, mission, totalRounds } = state;
+  const { gameType, mission, totalRounds, firstPlayer } = state;
 
   const canStart = mission !== null;
 
@@ -81,6 +81,27 @@ export default function MissionSetup({ state, dispatch }) {
         </div>
       </div>
 
+      {/* First Turn */}
+      <div className="panel" style={{ marginTop: '16px' }}>
+        <div className="panel-header">
+          <h2>First Turn</h2>
+        </div>
+        <p className="text-muted text-sm" style={{ marginBottom: '10px' }}>
+          Which player takes the first turn? Battle Shock tests only start from the second Command Phase.
+        </p>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          {[1, 2].map((p) => (
+            <button
+              key={p}
+              className={`btn ${firstPlayer === p ? 'btn-primary' : ''}`}
+              onClick={() => dispatch({ type: 'SET_FIRST_PLAYER', player: p })}
+            >
+              Player {p} goes first
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Rounds */}
       <div className="panel" style={{ marginTop: '16px' }}>
         <div className="panel-header">
@@ -121,11 +142,12 @@ export default function MissionSetup({ state, dispatch }) {
         <div className="panel-header">
           <h2>Battle Summary</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
           {[
             { label: 'Game Type', value: gameType },
             { label: 'Mission', value: mission ? mission.name : '—' },
             { label: 'Rounds', value: totalRounds },
+            { label: 'First Turn', value: `Player ${firstPlayer}` },
           ].map(({ label, value }) => (
             <div key={label} style={{ background: 'var(--surface-2)', padding: '10px 14px', border: '1px solid var(--border-sub)' }}>
               <div className="points-label">{label}</div>
