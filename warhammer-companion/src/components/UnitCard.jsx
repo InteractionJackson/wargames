@@ -75,7 +75,8 @@ function PhaseHint({ unit, currentPhase, isCommandPhase, isDefending }) {
 
   const ranged = unit.weapons.filter((w) => w.type === 'ranged');
   const melee  = unit.weapons.filter((w) => w.type === 'melee');
-  const belowHalf = unit.currentWounds * 2 < unit.wounds;
+  const unitTotalWounds = (unit.woundsPerModel || unit.wounds) * (unit.modelCount || 1);
+  const belowHalf = unit.currentWounds * 2 < unitTotalWounds;
 
   // Defending during opponent's Shooting Phase
   if (currentPhase === 'Shooting Phase' && isDefending) {
@@ -202,7 +203,12 @@ export default function UnitCard({ unit, dispatch, isCommandPhase = false, isDef
   const [expanded, setExpanded] = useState(false);
   const [editingNotes, setEditingNotes] = useState(false);
 
-  const woundPct = unit.currentWounds / unit.wounds;
+  const woundsPerModel = unit.woundsPerModel || unit.wounds;
+  const modelCount = unit.modelCount || 1;
+  const totalWounds = woundsPerModel * modelCount;
+  const modelsRemaining = modelCount > 1 ? Math.ceil(unit.currentWounds / woundsPerModel) : null;
+
+  const woundPct = unit.currentWounds / totalWounds;
   const woundColor =
     woundPct > 0.6 ? 'var(--warning)' : woundPct > 0.3 ? '#c0a030' : 'var(--danger)';
 
@@ -263,33 +269,66 @@ export default function UnitCard({ unit, dispatch, isCommandPhase = false, isDef
         </button>
       </div>
 
-      {/* Wounds bar */}
+      {/* Wounds / Models bar */}
       {!unit.destroyed && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-          <span className="text-sm" style={{ fontFamily: 'var(--font-head)', color: 'var(--text-muted)', minWidth: '48px', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.05em' }}>
-            Wounds
-          </span>
-          <div className="wounds-bar">
-            {Array.from({ length: unit.wounds }).map((_, i) => (
-              <motion.div
-                key={i}
-                className={`wound-pip${i >= unit.currentWounds ? ' lost' : ''}`}
-                animate={{
-                  scale: i >= unit.currentWounds ? 0.7 : 1,
-                  background: i < unit.currentWounds ? woundColor : 'var(--surface-3)',
-                }}
-                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-              />
-            ))}
+        <div style={{ marginBottom: '6px' }}>
+          {/* Model count row — only for multi-model units */}
+          {modelCount > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ fontFamily: 'var(--font-head)', color: 'var(--text-muted)', minWidth: '48px', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.05em' }}>
+                Models
+              </span>
+              {/* Progress bar showing model casualties */}
+              <div style={{ flex: 1, height: '6px', background: 'var(--surface-2)', border: '1px solid var(--border-sub)', borderRadius: '1px', overflow: 'hidden' }}>
+                <motion.div
+                  style={{ height: '100%', background: woundColor, transformOrigin: 'left' }}
+                  animate={{ width: `${(modelsRemaining / modelCount) * 100}%` }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              </div>
+              <span style={{ fontFamily: 'var(--font-head)', fontSize: '12px', color: woundColor, minWidth: '52px', textAlign: 'right' }}>
+                {modelsRemaining}/{modelCount}
+              </span>
+            </div>
+          )}
+          {/* Wound pip row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontFamily: 'var(--font-head)', color: 'var(--text-muted)', minWidth: '48px', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.05em' }}>
+              Wounds
+            </span>
+            {totalWounds <= 20 ? (
+              <div className="wounds-bar">
+                {Array.from({ length: totalWounds }).map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className={`wound-pip${i >= unit.currentWounds ? ' lost' : ''}`}
+                    style={{ marginLeft: modelCount > 1 && i > 0 && i % woundsPerModel === 0 ? '4px' : undefined }}
+                    animate={{
+                      scale: i >= unit.currentWounds ? 0.7 : 1,
+                      background: i < unit.currentWounds ? woundColor : 'var(--surface-3)',
+                    }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div style={{ flex: 1, height: '10px', background: 'var(--surface-2)', border: '1px solid var(--border-sub)', borderRadius: '1px', overflow: 'hidden' }}>
+                <motion.div
+                  style={{ height: '100%', background: woundColor }}
+                  animate={{ width: `${woundPct * 100}%` }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              </div>
+            )}
+            <div className="wounds-control">
+              <button className="btn btn-sm btn-icon" onClick={() => handleWoundChange(-1)} disabled={unit.currentWounds === 0}>−</button>
+              <input type="number" min={0} max={totalWounds} value={unit.currentWounds} onChange={handleDirectWound} style={{ width: '44px', textAlign: 'center', padding: '2px 4px' }} />
+              <button className="btn btn-sm btn-icon" onClick={() => handleWoundChange(1)} disabled={unit.currentWounds === totalWounds}>+</button>
+            </div>
+            <span style={{ fontFamily: 'var(--font-head)', fontSize: '11px', color: woundColor }}>
+              {unit.currentWounds}/{totalWounds}W
+            </span>
           </div>
-          <div className="wounds-control">
-            <button className="btn btn-sm btn-icon" onClick={() => handleWoundChange(-1)} disabled={unit.currentWounds === 0}>−</button>
-            <input type="number" min={0} max={unit.wounds} value={unit.currentWounds} onChange={handleDirectWound} style={{ width: '44px', textAlign: 'center', padding: '2px 4px' }} />
-            <button className="btn btn-sm btn-icon" onClick={() => handleWoundChange(1)} disabled={unit.currentWounds === unit.wounds}>+</button>
-          </div>
-          <span style={{ fontFamily: 'var(--font-head)', fontSize: '11px', color: woundColor }}>
-            {unit.currentWounds}/{unit.wounds}W
-          </span>
         </div>
       )}
 

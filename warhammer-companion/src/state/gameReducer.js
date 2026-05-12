@@ -66,8 +66,9 @@ export function gameReducer(state, action) {
     // ── Army Builder ──────────────────────────────────────────────────────────
     case 'ADD_UNIT': {
       const { player, unit } = action;
+      const modelCount = action.modelCount || unit.minModels || 1;
       const instanceId = makeInstanceId(unit.id);
-      const entry = { ...unit, instanceId };
+      const entry = { ...unit, instanceId, modelCount };
       const key = player === 1 ? 'player1Army' : 'player2Army';
       return { ...state, [key]: [...state[key], entry] };
     }
@@ -100,9 +101,12 @@ export function gameReducer(state, action) {
       const battleUnits = {};
       const buildUnits = (army, owner) => {
         army.forEach((unit) => {
+          const mc = unit.modelCount || 1;
           battleUnits[unit.instanceId] = {
             ...unit, owner,
-            currentWounds: unit.wounds,
+            modelCount: mc,
+            woundsPerModel: unit.wounds,
+            currentWounds: unit.wounds * mc,
             destroyed: false,
             notes: '',
             battleShocked: false,
@@ -205,7 +209,8 @@ export function gameReducer(state, action) {
       const { instanceId, wounds } = action;
       const unit = state.battleUnits[instanceId];
       if (!unit) return state;
-      const clamped = Math.max(0, Math.min(unit.wounds, wounds));
+      const maxWounds = unit.woundsPerModel * unit.modelCount;
+      const clamped = Math.max(0, Math.min(maxWounds, wounds));
       return { ...state, battleUnits: { ...state.battleUnits, [instanceId]: { ...unit, currentWounds: clamped, destroyed: clamped === 0 } } };
     }
     case 'SET_NOTES': {

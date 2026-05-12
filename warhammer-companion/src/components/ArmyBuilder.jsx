@@ -14,7 +14,13 @@ function totalPoints(army) {
 
 function PlayerPanel({ player, faction, army, confirmed, dispatch }) {
   const [selectedFaction, setSelectedFaction] = useState(faction);
+  const [pendingAdd, setPendingAdd] = useState(null); // { unit, count }
   const roster = units.filter((u) => u.faction === selectedFaction);
+
+  function addUnit(unit, modelCount) {
+    dispatch({ type: 'ADD_UNIT', player, unit, modelCount });
+    setPendingAdd(null);
+  }
 
   return (
     <div className="army-player-panel">
@@ -49,21 +55,63 @@ function PlayerPanel({ player, faction, army, confirmed, dispatch }) {
               </h3>
             </div>
             <div className="army-roster">
-              {roster.map((unit) => (
-                <div
-                  key={unit.id}
-                  className="unit-roster-item"
-                  onClick={() => dispatch({ type: 'ADD_UNIT', player, unit })}
-                >
-                  <span className={`badge ${TYPE_BADGE[unit.type] || 'badge-infantry'}`}>
-                    {unit.type}
-                  </span>
-                  <span className="unit-roster-item-name">{unit.name}</span>
-                  <span style={{ fontFamily: 'var(--font-head)', fontSize: '12px', color: 'var(--gold)' }}>
-                    {unit.points} pts
-                  </span>
-                </div>
-              ))}
+              {roster.map((unit) => {
+                const isMulti = unit.maxModels > 1;
+                const isPending = pendingAdd?.unit.id === unit.id;
+                return (
+                  <div key={unit.id}>
+                    <div
+                      className="unit-roster-item"
+                      onClick={() => {
+                        if (isMulti) {
+                          setPendingAdd(isPending ? null : { unit, count: unit.minModels });
+                        } else {
+                          addUnit(unit, 1);
+                        }
+                      }}
+                    >
+                      <span className={`badge ${TYPE_BADGE[unit.type] || 'badge-infantry'}`}>
+                        {unit.type}
+                      </span>
+                      <span className="unit-roster-item-name">{unit.name}</span>
+                      <span style={{ fontFamily: 'var(--font-head)', fontSize: '12px', color: 'var(--gold)' }}>
+                        {unit.points} pts
+                      </span>
+                      {isMulti && (
+                        <span style={{ fontFamily: 'var(--font-head)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                          {unit.minModels}–{unit.maxModels} models
+                        </span>
+                      )}
+                    </div>
+                    {isPending && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'var(--surface-2)', borderBottom: '1px solid var(--border-sub)' }}>
+                        <span style={{ fontFamily: 'var(--font-head)', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Models:</span>
+                        <button
+                          className="btn btn-sm btn-icon"
+                          onClick={() => setPendingAdd(p => ({ ...p, count: Math.max(p.unit.minModels, p.count - 1) }))}
+                          disabled={pendingAdd.count <= unit.minModels}
+                        >−</button>
+                        <span style={{ fontFamily: 'var(--font-head)', fontSize: '15px', color: 'var(--white)', minWidth: '24px', textAlign: 'center' }}>
+                          {pendingAdd.count}
+                        </span>
+                        <button
+                          className="btn btn-sm btn-icon"
+                          onClick={() => setPendingAdd(p => ({ ...p, count: Math.min(p.unit.maxModels, p.count + 1) }))}
+                          disabled={pendingAdd.count >= unit.maxModels}
+                        >+</button>
+                        <button
+                          className="btn btn-sm btn-primary"
+                          style={{ marginLeft: '4px' }}
+                          onClick={() => addUnit(unit, pendingAdd.count)}
+                        >
+                          Add {pendingAdd.count} models
+                        </button>
+                        <button className="btn btn-sm" onClick={() => setPendingAdd(null)}>✕</button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -85,13 +133,18 @@ function PlayerPanel({ player, faction, army, confirmed, dispatch }) {
                   <span className={`badge ${TYPE_BADGE[unit.type] || 'badge-infantry'}`}>
                     {unit.type.slice(0, 3).toUpperCase()}
                   </span>
-                  <span className="army-list-item-name">{unit.name}</span>
+                  <span className="army-list-item-name">
+                    {unit.name}
+                    {unit.modelCount > 1 && (
+                      <span style={{ fontFamily: 'var(--font-head)', fontSize: '10px', color: 'var(--text-muted)', marginLeft: '6px' }}>
+                        ×{unit.modelCount}
+                      </span>
+                    )}
+                  </span>
                   <span className="army-list-item-pts">{unit.points} pts</span>
                   <button
                     className="btn btn-sm btn-danger"
-                    onClick={() =>
-                      dispatch({ type: 'REMOVE_UNIT', player, instanceId: unit.instanceId })
-                    }
+                    onClick={() => dispatch({ type: 'REMOVE_UNIT', player, instanceId: unit.instanceId })}
                   >
                     ✕
                   </button>

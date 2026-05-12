@@ -22,6 +22,40 @@ export const UNIT_TYPES = {
   MONSTER: 'Monster',
 };
 
+// Min/max model counts from official datasheets. Unlisted units default to 1/1.
+const MODEL_COUNTS = {
+  sm_intercessor_squad:       { min: 5,  max: 10 },
+  sm_tactical_squad:          { min: 10, max: 10 },
+  sm_terminator_squad:        { min: 5,  max: 10 },
+  sm_hellblaster_squad:       { min: 5,  max: 10 },
+  csm_legionaries:            { min: 5,  max: 10 },
+  csm_chaos_terminators:      { min: 5,  max: 10 },
+  csm_havocs:                 { min: 5,  max: 5  },
+  csm_possessed:              { min: 5,  max: 10 },
+  necron_warriors:            { min: 10, max: 20 },
+  necron_immortals:           { min: 5,  max: 10 },
+  necron_lychguard:           { min: 5,  max: 10 },
+  necron_skorpekh_destroyers: { min: 3,  max: 6  },
+  aeldari_guardian_defenders: { min: 11, max: 11 },
+  aeldari_fire_dragons:       { min: 5,  max: 10 },
+  aeldari_wraithguard:        { min: 5,  max: 10 },
+  aeldari_windriders:         { min: 3,  max: 9  },
+  tyranid_termagants:         { min: 10, max: 20 },
+  tyranid_hormagaunts:        { min: 10, max: 20 },
+  tyranid_warriors:           { min: 3,  max: 6  },
+  orks_boyz:                  { min: 10, max: 20 },
+  orks_meganobz:              { min: 2,  max: 6  },
+  tau_strike_team:            { min: 10, max: 10 },
+  drukhari_kabalite_warriors: { min: 10, max: 10 },
+  drukhari_wyches:            { min: 10, max: 10 },
+  gsc_acolyte_hybrids:        { min: 5,  max: 10 },
+  gsc_neophyte_hybrids:       { min: 10, max: 20 },
+  gsc_aberrants:              { min: 5,  max: 10 },
+  votann_hearthkyn_warriors:  { min: 10, max: 10 },
+  votann_einhyr_hearthguard:  { min: 5,  max: 10 },
+  votann_hernkyn_pioneers:    { min: 3,  max: 6  },
+};
+
 const units = [
   // ─── SPACE MARINES ───────────────────────────────────────────────────────────
   {
@@ -1946,9 +1980,16 @@ const units = [
   },
 ];
 
-export default units;
+// Attach minModels / maxModels from lookup; default to 1 for single-model units
+const processedUnits = units.map((u) => {
+  const mc = MODEL_COUNTS[u.id];
+  return mc
+    ? { ...u, minModels: mc.min, maxModels: mc.max }
+    : { ...u, minModels: 1, maxModels: 1 };
+});
 
-// Helper: get units by faction
+export default processedUnits;
+
 export function getUnitsByFaction(faction) {
-  return units.filter((u) => u.faction === faction);
+  return processedUnits.filter((u) => u.faction === faction);
 }
