@@ -70,12 +70,46 @@ function DiceValue({ val }) {
   return <>{str}</>;
 }
 
-function PhaseHint({ unit, currentPhase, isCommandPhase }) {
+function PhaseHint({ unit, currentPhase, isCommandPhase, isDefending }) {
   if (!currentPhase || unit.destroyed) return null;
 
   const ranged = unit.weapons.filter((w) => w.type === 'ranged');
   const melee  = unit.weapons.filter((w) => w.type === 'melee');
   const belowHalf = unit.currentWounds * 2 < unit.wounds;
+
+  // Defending during opponent's Shooting Phase
+  if (currentPhase === 'Shooting Phase' && isDefending) {
+    const apExamples = [0, -1, -2, -3].map((ap) => {
+      const modified = unit.save - ap;
+      const clamped = Math.max(2, modified);
+      return { ap, roll: clamped > 6 ? '—' : `${clamped}+` };
+    });
+    return (
+      <div className="phase-hint">
+        <span className="phase-hint-label">Save</span>
+        <span className="phase-hint-value">{unit.save}+</span>
+        <span className="phase-hint-sub" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {unit.invulnSave && (
+            <span>
+              <Tooltip text="Invulnerable saves ignore AP — always roll this if it's better than your modified armour save">
+                <span className="abbr">{unit.invulnSave}++ INV</span>
+              </Tooltip>
+              {' '}(ignores AP)
+            </span>
+          )}
+          <span style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {apExamples.map(({ ap, roll }) => (
+              <span key={ap} style={{ color: ap < 0 ? 'var(--text-muted)' : 'var(--text)' }}>
+                <Tooltip text={`AP${ap}: your armour save becomes ${roll === '—' ? 'impossible (no save)' : roll}`}>
+                  <span className="abbr">AP{ap}→{roll}</span>
+                </Tooltip>
+              </span>
+            ))}
+          </span>
+        </span>
+      </div>
+    );
+  }
 
   if (currentPhase === 'Movement Phase') {
     return (
@@ -164,7 +198,7 @@ function PhaseHint({ unit, currentPhase, isCommandPhase }) {
   return null;
 }
 
-export default function UnitCard({ unit, dispatch, isCommandPhase = false, currentPhase = null, activeStratagems = [] }) {
+export default function UnitCard({ unit, dispatch, isCommandPhase = false, isDefending = false, currentPhase = null, activeStratagems = [] }) {
   const [expanded, setExpanded] = useState(false);
   const [editingNotes, setEditingNotes] = useState(false);
 
@@ -260,7 +294,7 @@ export default function UnitCard({ unit, dispatch, isCommandPhase = false, curre
       )}
 
       {/* Phase hint — visible without expanding */}
-      <PhaseHint unit={unit} currentPhase={currentPhase} isCommandPhase={isCommandPhase} />
+      <PhaseHint unit={unit} currentPhase={currentPhase} isCommandPhase={isCommandPhase} isDefending={isDefending} />
 
       {/* Notes */}
       <div>

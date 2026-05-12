@@ -1,11 +1,6 @@
 import { useState, useMemo } from 'react';
 
-// Standard 40k 10th edition wound roll table:
-// Attacker S >= 2x Defender T → 2+
-// Attacker S > Defender T      → 3+
-// Attacker S == Defender T     → 4+
-// Attacker S < Defender T      → 5+
-// Attacker S <= half Defender T→ 6+
+// Standard 40k 10th edition wound roll table
 function woundRoll(str, toughness) {
   if (str >= toughness * 2) return 2;
   if (str > toughness) return 3;
@@ -14,19 +9,15 @@ function woundRoll(str, toughness) {
   return 5;
 }
 
-// Probability of rolling >= target on a D6
 function prob(target) {
   if (target <= 1) return 1;
   if (target >= 7) return 0;
   return (7 - target) / 6;
 }
 
-// Parse damage/attacks that may be a string like 'd3', 'd6', 'd6+1', '2d6' etc.
-// Returns expected average
 function avgDiceValue(val) {
   if (typeof val === 'number') return val;
   const s = String(val).toLowerCase().replace(/\s/g, '');
-  // d6+1, d3, 2d6, etc.
   const m = s.match(/^(\d*)(d\d+)([+-]\d+)?$/);
   if (!m) return parseFloat(s) || 0;
   const num = m[1] ? parseInt(m[1], 10) : 1;
@@ -35,12 +26,61 @@ function avgDiceValue(val) {
   return num * ((sides + 1) / 2) + bonus;
 }
 
-function CalcStep({ label, value, detail, active }) {
+function formatVal(val) {
+  if (typeof val === 'string') return val.toUpperCase();
+  return String(val);
+}
+
+// Visual roll chain chip at the top
+function RollChain({ items }) {
   return (
-    <div className={`calc-step${active ? ' active' : ''}`}>
-      <span className="calc-step-label">{label}</span>
-      <span className="calc-step-value">{typeof value === 'number' ? value.toFixed(2) : value}</span>
-      {detail && <span className="calc-step-detail">{detail}</span>}
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', margin: '10px 0 14px' }}>
+      {items.map((item, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div style={{
+            background: 'var(--surface-2)',
+            border: `1px solid ${item.highlight ? 'var(--gold)' : 'var(--border-em)'}`,
+            padding: '4px 10px',
+            borderRadius: '2px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            minWidth: '52px',
+          }}>
+            <span style={{ fontFamily: 'var(--font-head)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</span>
+            <span style={{ fontFamily: 'var(--font-head)', fontSize: '18px', color: item.highlight ? 'var(--gold)' : 'var(--white)', fontWeight: 700, lineHeight: 1.2 }}>{item.roll}</span>
+            {item.sub && <span style={{ fontFamily: 'var(--font-body)', fontSize: '9px', color: 'var(--text-muted)', marginTop: '1px' }}>{item.sub}</span>}
+          </div>
+          {i < items.length - 1 && (
+            <span style={{ color: 'var(--border-em)', fontSize: '12px' }}>→</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Individual breakdown row
+function CalcRow({ label, roll, rollSub, avg, detail, faded }) {
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: '110px 70px 1fr',
+      gap: '8px',
+      alignItems: 'center',
+      padding: '6px 0',
+      borderBottom: '1px solid var(--border-sub)',
+      opacity: faded ? 0.5 : 1,
+    }}>
+      <span style={{ fontFamily: 'var(--font-head)', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+        <span style={{ fontFamily: 'var(--font-head)', fontSize: '15px', color: 'var(--white)', fontWeight: 700 }}>{roll}</span>
+        {rollSub && <span style={{ fontFamily: 'var(--font-body)', fontSize: '9px', color: 'var(--text-muted)' }}>{rollSub}</span>}
+      </div>
+      <div>
+        <span style={{ fontFamily: 'var(--font-head)', fontSize: '12px', color: 'var(--gold)' }}>~{typeof avg === 'number' ? avg.toFixed(2) : avg}</span>
+        {detail && <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--text-muted)', marginLeft: '6px' }}>{detail}</span>}
+      </div>
     </div>
   );
 }
@@ -70,35 +110,31 @@ export default function CombatCalculator({ battleUnits, dispatch, player }) {
     const woundProb = prob(wTarget);
     const avgWounds = avgHits * woundProb;
 
-    // Save: target save modified by AP, or invuln if better
-    const modifiedSave = target.save - weapon.ap;
+    // AP is stored as a negative number (e.g. -1, -2) or 0
+    const apVal = weapon.ap; // e.g. -1
+    const baseSave = target.save;
+    const modifiedSave = baseSave - apVal; // subtracting a negative increases the target number
     const invuln = target.invulnSave;
-    const effectiveSave = invuln
-      ? Math.min(modifiedSave, invuln) // lower number = better save
-      : modifiedSave;
-    const clampedSave = Math.max(2, effectiveSave); // saves of 1+ don't exist
-    const saveProb = prob(clampedSave);
+    // Lower number = better save; pick whichever is better for the defender
+    const effectiveSave = invuln ? Math.min(modifiedSave, invuln) : modifiedSave;
+    const clampedSave = Math.max(2, effectiveSave);
+    const saveImpossible = effectiveSave > 6;
+    const saveProb = saveImpossible ? 0 : prob(clampedSave);
     const failSaveProb = 1 - saveProb;
     const avgFailedSaves = avgWounds * failSaveProb;
 
     const avgDmg = avgDiceValue(weapon.damage);
     const avgTotalDamage = avgFailedSaves * avgDmg;
 
+    const usingInvuln = invuln && invuln <= modifiedSave;
+
     return {
-      avgAttacks,
-      hitTarget,
-      hitProb,
-      avgHits,
-      wTarget,
-      woundProb,
-      avgWounds,
-      modifiedSave,
-      invuln,
-      effectiveSave: clampedSave,
-      failSaveProb,
-      avgFailedSaves,
-      avgDmg,
-      avgTotalDamage,
+      avgAttacks, hitTarget, hitProb, avgHits,
+      wTarget, woundProb, avgWounds,
+      baseSave, apVal, modifiedSave, invuln, usingInvuln,
+      effectiveSave: clampedSave, saveImpossible,
+      failSaveProb, avgFailedSaves,
+      avgDmg, avgTotalDamage,
     };
   }, [attacker, target, weapon]);
 
@@ -109,15 +145,6 @@ export default function CombatCalculator({ battleUnits, dispatch, player }) {
       dispatch({ type: 'APPLY_WOUNDS', instanceId: targetId, woundsToApply: wounds });
     }
   }
-
-  const saveLabel =
-    calc
-      ? calc.invuln && calc.invuln <= calc.modifiedSave
-        ? `${calc.effectiveSave}+ (invuln)`
-        : calc.modifiedSave <= 1
-        ? `2+ (capped)`
-        : `${calc.effectiveSave}+`
-      : '—';
 
   return (
     <div className="calc-panel">
@@ -132,16 +159,11 @@ export default function CombatCalculator({ battleUnits, dispatch, player }) {
           <label>Attacking Unit (Player {player})</label>
           <select
             value={attackerId}
-            onChange={(e) => {
-              setAttackerId(e.target.value);
-              setWeaponIdx(0);
-            }}
+            onChange={(e) => { setAttackerId(e.target.value); setWeaponIdx(0); }}
           >
             <option value="">— Select unit —</option>
             {attackerUnits.map((u) => (
-              <option key={u.instanceId} value={u.instanceId}>
-                {u.name}
-              </option>
+              <option key={u.instanceId} value={u.instanceId}>{u.name}</option>
             ))}
           </select>
         </div>
@@ -155,9 +177,7 @@ export default function CombatCalculator({ battleUnits, dispatch, player }) {
           >
             {attacker
               ? attacker.weapons.map((w, i) => (
-                  <option key={i} value={i}>
-                    {w.name} ({w.type})
-                  </option>
+                  <option key={i} value={i}>{w.name} ({w.type})</option>
                 ))
               : <option>— Select attacker first —</option>}
           </select>
@@ -171,45 +191,100 @@ export default function CombatCalculator({ battleUnits, dispatch, player }) {
           >
             <option value="">— Select target —</option>
             {targetUnits.map((u) => (
-              <option key={u.instanceId} value={u.instanceId}>
-                {u.name} ({u.currentWounds}/{u.wounds}W)
-              </option>
+              <option key={u.instanceId} value={u.instanceId}>{u.name} ({u.currentWounds}/{u.wounds}W)</option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Breakdown */}
+      {!attacker && (
+        <p className="text-muted text-sm" style={{ padding: '8px 0' }}>
+          Select an attacking unit, weapon, and target to see the expected outcome.
+        </p>
+      )}
+
       {calc && (
         <>
-          <CalcStep
+          {/* Visual roll chain */}
+          <RollChain items={[
+            { label: 'Hit', roll: `${calc.hitTarget}+`, sub: `BS${calc.hitTarget}`, highlight: true },
+            { label: 'Wound', roll: `${calc.wTarget}+`, sub: `S${weapon.strength} v T${target.toughness}`, highlight: true },
+            {
+              label: 'Save',
+              roll: calc.saveImpossible ? 'None' : `${calc.effectiveSave}+`,
+              sub: calc.usingInvuln ? 'invuln' : calc.apVal !== 0 ? `AP${calc.apVal}` : 'armour',
+              highlight: true,
+            },
+            { label: 'Damage', roll: formatVal(weapon.damage), sub: `avg ${calc.avgDmg.toFixed(1)}`, highlight: true },
+          ]} />
+
+          {/* Step-by-step breakdown */}
+          <CalcRow
             label="Attacks"
-            value={calc.avgAttacks}
-            detail={`${typeof weapon.attacks === 'string' ? weapon.attacks.toUpperCase() : weapon.attacks} attack${calc.avgAttacks !== 1 ? 's' : ''}`}
-            active
+            roll={formatVal(weapon.attacks)}
+            rollSub={`avg ${calc.avgAttacks.toFixed(1)}`}
+            avg={calc.avgAttacks}
+            detail="total dice rolled"
           />
-          <CalcStep
+          <CalcRow
             label="Hit Roll"
-            value={calc.avgHits}
-            detail={`${calc.hitTarget}+ to hit · ${(calc.hitProb * 100).toFixed(0)}% chance · ${calc.avgAttacks.toFixed(2)} × ${(calc.hitProb).toFixed(3)} = ${calc.avgHits.toFixed(2)}`}
+            roll={`${calc.hitTarget}+`}
+            rollSub={`${(calc.hitProb * 100).toFixed(0)}% chance`}
+            avg={calc.avgHits}
+            detail={`${calc.avgAttacks.toFixed(2)} attacks × ${(calc.hitProb * 100).toFixed(0)}%`}
           />
-          <CalcStep
+          <CalcRow
             label="Wound Roll"
-            value={calc.avgWounds}
-            detail={`${calc.wTarget}+ to wound (S${weapon.strength} vs T${target.toughness}) · ${(calc.woundProb * 100).toFixed(0)}% chance`}
-          />
-          <CalcStep
-            label="Save Roll"
-            value={calc.avgFailedSaves}
-            detail={`${saveLabel} save · ${(calc.failSaveProb * 100).toFixed(0)}% fail rate${weapon.ap !== 0 ? ` · AP${weapon.ap} modifier` : ''}`}
-          />
-          <CalcStep
-            label="Damage"
-            value={calc.avgDmg}
-            detail={`${formatDamage(weapon.damage)} damage per unsaved wound`}
+            roll={`${calc.wTarget}+`}
+            rollSub={`S${weapon.strength} vs T${target.toughness}`}
+            avg={calc.avgWounds}
+            detail={`${calc.avgHits.toFixed(2)} hits × ${(calc.woundProb * 100).toFixed(0)}%`}
           />
 
-          <div className="calc-result">
+          {/* Save breakdown — show the AP maths explicitly */}
+          <div style={{
+            padding: '6px 0',
+            borderBottom: '1px solid var(--border-sub)',
+          }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '110px 70px 1fr', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontFamily: 'var(--font-head)', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Save Roll</span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontFamily: 'var(--font-head)', fontSize: '15px', color: calc.saveImpossible ? 'var(--danger)' : 'var(--white)', fontWeight: 700 }}>
+                  {calc.saveImpossible ? 'No save' : `${calc.effectiveSave}+`}
+                </span>
+                {calc.usingInvuln && (
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '9px', color: 'var(--gold)' }}>using invuln</span>
+                )}
+              </div>
+              <div>
+                <span style={{ fontFamily: 'var(--font-head)', fontSize: '12px', color: 'var(--gold)' }}>~{calc.avgFailedSaves.toFixed(2)}</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--text-muted)', marginLeft: '6px' }}>unsaved wounds</span>
+              </div>
+            </div>
+            {/* AP maths */}
+            <div style={{ marginTop: '4px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', paddingLeft: '118px' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                Armour {calc.baseSave}+
+                {calc.apVal !== 0 && (
+                  <> → AP{calc.apVal} → <span style={{ color: calc.modifiedSave > 6 ? 'var(--danger)' : 'var(--text)' }}>{calc.modifiedSave > 6 ? 'no save' : `${calc.modifiedSave}+`}</span></>
+                )}
+                {calc.invuln && (
+                  <> · Invuln {calc.invuln}+ {calc.usingInvuln ? <span style={{ color: 'var(--gold)' }}>(better — used)</span> : '(worse — ignored)'}</>
+                )}
+              </span>
+            </div>
+          </div>
+
+          <CalcRow
+            label="Damage"
+            roll={formatVal(weapon.damage)}
+            rollSub={`avg ${calc.avgDmg.toFixed(1)} per hit`}
+            avg={calc.avgTotalDamage}
+            detail={`${calc.avgFailedSaves.toFixed(2)} unsaved × ${calc.avgDmg.toFixed(2)}`}
+          />
+
+          {/* Result */}
+          <div className="calc-result" style={{ marginTop: '10px' }}>
             <span className="calc-result-value">{calc.avgTotalDamage.toFixed(2)}</span>
             <div>
               <div className="calc-result-label">Expected wounds dealt</div>
@@ -228,35 +303,22 @@ export default function CombatCalculator({ battleUnits, dispatch, player }) {
           </div>
 
           {calc.avgTotalDamage >= target.currentWounds && (
-            <div
-              style={{
-                marginTop: '8px',
-                padding: '6px 10px',
-                background: '#3a1010',
-                border: '1px solid var(--danger)',
-                fontSize: '12px',
-                color: 'var(--danger)',
-                fontFamily: 'var(--font-head)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-              }}
-            >
+            <div style={{
+              marginTop: '8px',
+              padding: '6px 10px',
+              background: '#3a1010',
+              border: '1px solid var(--danger)',
+              fontSize: '12px',
+              color: 'var(--danger)',
+              fontFamily: 'var(--font-head)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+            }}>
               ⚠ Expected to destroy {target.name}
             </div>
           )}
         </>
       )}
-
-      {!attacker && (
-        <p className="text-muted text-sm" style={{ padding: '8px 0' }}>
-          Select an attacking unit, weapon, and target to see the expected outcome.
-        </p>
-      )}
     </div>
   );
-}
-
-function formatDamage(d) {
-  if (typeof d === 'string') return d.toUpperCase();
-  return String(d);
 }

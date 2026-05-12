@@ -38,6 +38,8 @@ export default function BattleTracker({ state, dispatch }) {
   const isFirstCommandPhase = isCommandPhase && currentRound === 1 && currentTurn === firstPlayer;
   const showCalc = CALC_PHASES.includes(currentPhase);
 
+  const isShootingPhase = currentPhase === 'Shooting Phase';
+
   const allUnits = Object.values(battleUnits);
   const p1Active = allUnits.filter((u) => u.owner === 1 && !u.destroyed);
   const p1Dead   = allUnits.filter((u) => u.owner === 1 && u.destroyed);
@@ -185,7 +187,8 @@ export default function BattleTracker({ state, dispatch }) {
                   unit={unit}
                   dispatch={dispatch}
                   isCommandPhase={isCommandPhase && isActive && !isFirstCommandPhase}
-                  currentPhase={isActive ? currentPhase : null}
+                  currentPhase={isActive ? currentPhase : (isShootingPhase ? 'Shooting Phase' : null)}
+                  isDefending={!isActive && isShootingPhase}
                   activeStratagems={unitStratagems.filter((s) => s.instanceId === unit.instanceId)}
                 />
               ))}
