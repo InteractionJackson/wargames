@@ -1091,3 +1091,329 @@ label {
 .gap-12 { gap: 12px; }
 .gap-16 { gap: 16px; }
 .flex-wrap { flex-wrap: wrap; }
+
+/* ── Combat Modal ─────────────────────────────────────── */
+.cm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.cm-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border-em);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-em);
+  flex-shrink: 0;
+}
+
+.cm-phase-tag {
+  font-family: var(--font-head);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--gold);
+  color: #1a1208;
+  padding: 2px 7px;
+  font-weight: 700;
+}
+
+.cm-header-title {
+  font-family: var(--font-head);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--white);
+}
+
+.cm-units-strip {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 2px solid var(--border-em);
+  flex-shrink: 0;
+}
+
+.cm-unit-col {
+  flex: 1;
+  padding: 10px 12px;
+  min-width: 0;
+}
+
+.cm-unit-col-right {
+  text-align: right;
+  border-left: 1px solid var(--border-sub);
+}
+
+.cm-vs-col {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-family: var(--font-head);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-left: 1px solid var(--border-sub);
+  border-right: 1px solid var(--border-sub);
+  flex-shrink: 0;
+}
+
+.cm-unit-faction {
+  font-family: var(--font-head);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 1px;
+}
+
+.cm-unit-name {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+
+.cm-weapon-name {
+  font-size: 11px;
+  color: var(--gold);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cm-unit-stats {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-family: var(--font-head);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.cm-unit-col-right .cm-unit-stats {
+  justify-content: flex-end;
+}
+
+.cm-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px 14px;
+}
+
+.cm-models-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-sub);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.cm-bar-label {
+  font-family: var(--font-head);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.cm-bar-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.cm-stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.cm-stepper-val {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+  min-width: 30px;
+  text-align: center;
+  line-height: 1;
+}
+
+.cm-section {
+  font-family: var(--font-head);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold-dim);
+  margin: 12px 0 5px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-sub);
+}
+
+.cm-roll-step {
+  padding: 7px 10px;
+  background: var(--surface-2);
+  border-left: 3px solid var(--border-em);
+  margin-bottom: 5px;
+}
+
+.cm-roll-step-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.cm-roll-label {
+  font-family: var(--font-head);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.cm-est-tag {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+  font-family: var(--font-body);
+}
+
+.cm-info-btn {
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: help;
+  line-height: 1;
+}
+
+.cm-roll-spacer {
+  flex: 1;
+}
+
+.cm-roll-target {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cm-no-save-tag {
+  font-family: var(--font-head);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--danger);
+}
+
+.cm-dice-group {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cm-die {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-em);
+  border-radius: 2px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cm-die::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  background: var(--text-muted);
+  border-radius: 50%;
+}
+
+.cm-die-more {
+  font-family: var(--font-head);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+.cm-dice-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+}
+
+.cm-wounds-track {
+  padding: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-sub);
+}
+
+.cm-wounds-track-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.cm-wounds-track-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.cm-wounds-progress {
+  height: 6px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-sub);
+  overflow: hidden;
+}
+
+.cm-wounds-fill {
+  height: 100%;
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+.cm-destroyed-alert {
+  margin-top: 6px;
+  font-family: var(--font-head);
+  font-size: 11px;
+  color: var(--danger);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

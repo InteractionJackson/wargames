@@ -178,7 +178,7 @@ export default function BattleTracker({ state, dispatch }) {
 
       {/* Combat Calculator */}
       {showCalc && (
-        <CombatCalculator battleUnits={battleUnits} dispatch={dispatch} player={currentTurn} />
+        <CombatCalculator battleUnits={battleUnits} dispatch={dispatch} player={currentTurn} currentPhase={currentPhase} />
       )}
 
       {/* Stratagem Panel */}
