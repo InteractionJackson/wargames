@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import CombatModal from './CombatModal.jsx';
 
 // Standard 40k 10th edition wound roll table:
 // Attacker S >= 2x Defender T → 2+
@@ -45,10 +46,11 @@ function CalcStep({ label, value, detail, active }) {
   );
 }
 
-export default function CombatCalculator({ battleUnits, dispatch, player }) {
+export default function CombatCalculator({ battleUnits, dispatch, player, currentPhase }) {
   const [attackerId, setAttackerId] = useState('');
   const [targetId, setTargetId] = useState('');
   const [weaponIdx, setWeaponIdx] = useState(0);
+  const [showModal, setShowModal] = useState(false);
 
   const activeUnits = Object.values(battleUnits).filter((u) => !u.destroyed);
   const attackerUnits = activeUnits.filter((u) => u.owner === player);
@@ -227,6 +229,14 @@ export default function CombatCalculator({ battleUnits, dispatch, player }) {
             </button>
           </div>
 
+          <button
+            className="btn btn-sm"
+            style={{ marginTop: '8px', width: '100%', justifyContent: 'center', borderColor: 'var(--gold-dim)', color: 'var(--gold)' }}
+            onClick={() => setShowModal(true)}
+          >
+            ⚄ Roll Guide
+          </button>
+
           {calc.avgTotalDamage >= target.currentWounds && (
             <div
               style={{
@@ -251,6 +261,16 @@ export default function CombatCalculator({ battleUnits, dispatch, player }) {
         <p className="text-muted text-sm" style={{ padding: '8px 0' }}>
           Select an attacking unit, weapon, and target to see the expected outcome.
         </p>
+      )}
+
+      {showModal && attacker && weapon && target && (
+        <CombatModal
+          attacker={attacker}
+          weapon={weapon}
+          defender={target}
+          phase={currentPhase}
+          onClose={() => setShowModal(false)}
+        />
       )}
     </div>
   );
