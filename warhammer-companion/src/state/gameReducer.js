@@ -6,7 +6,6 @@ export const PHASES = [
   'Shooting Phase',
   'Charge Phase',
   'Fight Phase',
-  'Morale Phase',
 ];
 
 export const APP_PHASES = {
@@ -48,13 +47,7 @@ function makeInstanceId(unitId) {
   return `${unitId}_${++instanceCounter}`;
 }
 
-function clearBattleShockForPlayer(battleUnits, player) {
-  const updated = {};
-  for (const [id, unit] of Object.entries(battleUnits)) {
-    updated[id] = unit.owner === player ? { ...unit, battleShocked: false } : unit;
-  }
-  return updated;
-}
+// In 11th edition battle-shock is NOT auto-cleared — players must pass a roll in Command Phase.
 
 // Remove end_of_phase stratagems when a phase ends
 function clearExpiredStratagems(activeStratagems) {
@@ -116,8 +109,9 @@ export function gameReducer(state, action) {
         currentRound: 1,
         currentTurn: 1,
         currentPhaseIndex: 0,
-        // Player 1 starts their Command Phase — both get 1 CP to start
-        cp: { 1: 1, 2: 0 },
+        // 11th ed: both players gain 1 CP in every Command Phase.
+        // P1's first Command Phase has fired, so both start with 1 CP.
+        cp: { 1: 1, 2: 1 },
         activeStratagems: [],
       };
     }
@@ -130,13 +124,12 @@ export function gameReducer(state, action) {
 
       if (nextIndex >= PHASES.length) {
         if (state.currentTurn === 1) {
-          // Player 2's turn begins — Command Phase → +1 CP for P2
+          // Player 2's turn begins — Command Phase → both players gain 1 CP (11th ed rule)
           return {
             ...state,
             currentTurn: 2,
             currentPhaseIndex: 0,
-            cp: { ...state.cp, 2: state.cp[2] + 1 },
-            battleUnits: clearBattleShockForPlayer(state.battleUnits, 2),
+            cp: { 1: state.cp[1] + 1, 2: state.cp[2] + 1 },
             activeStratagems: clearedStratagems,
           };
         } else {
@@ -144,14 +137,13 @@ export function gameReducer(state, action) {
           if (nextRound > state.totalRounds) {
             return { ...state, appPhase: APP_PHASES.GAME_SUMMARY };
           }
-          // New round — Player 1's Command Phase → +1 CP for P1
+          // New round — Player 1's Command Phase → both players gain 1 CP (11th ed rule)
           return {
             ...state,
             currentRound: nextRound,
             currentTurn: 1,
             currentPhaseIndex: 0,
-            cp: { ...state.cp, 1: state.cp[1] + 1 },
-            battleUnits: clearBattleShockForPlayer(state.battleUnits, 1),
+            cp: { 1: state.cp[1] + 1, 2: state.cp[2] + 1 },
             activeStratagems: clearedStratagems,
           };
         }

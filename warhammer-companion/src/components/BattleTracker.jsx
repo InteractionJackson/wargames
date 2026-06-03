@@ -32,7 +32,8 @@ export default function BattleTracker({ state, dispatch }) {
   const [showStratagems, setShowStratagems] = useState(false);
 
   const currentPhase = PHASES[currentPhaseIndex];
-  const isMoralePhase = currentPhase === 'Morale Phase';
+  // 11th ed: battle-shock is checked during the Command Phase (no separate Morale Phase).
+  const isMoralePhase = currentPhase === 'Command Phase';
   const showCalc = CALC_PHASES.includes(currentPhase);
 
   const allUnits = Object.values(battleUnits);

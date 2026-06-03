@@ -3,63 +3,61 @@ import { PHASES } from '../state/gameReducer.js';
 const PHASE_CONTENT = {
   'Command Phase': {
     summary:
-      'Both players resolve Command phase abilities and CP regeneration. Select your Oath of Moment / Dark Pacts target. Activate any "start of Command phase" abilities on your datasheets.',
+      'Both players gain 1 CP. The active player then checks battle-shock for any units that are currently battle-shocked or at/below half-strength. A successful battle-shock roll removes the battle-shocked condition.',
     steps: [
-      'Gain 1 Command Point (CP) if eligible.',
-      'Select one enemy unit for Oath of Moment (Space Marines) or make a Dark Pact declaration (Chaos).',
-      'Resolve any "start of Command phase" abilities (e.g., Rhino Self Repair, Combat Doctrines).',
-      'Battle-shock any units that have lost more than half their models.',
+      'Both players gain 1 Command Point (CP).',
+      'Battle-shock step: make a battle-shock roll (2D6 vs Leadership) for each friendly unit that is currently battle-shocked OR at/below half-strength.',
+      'If a unit was battle-shocked and its roll succeeds, it is no longer battle-shocked.',
+      'If a roll fails, that unit becomes (or remains) battle-shocked.',
+      'Battle-shocked units: OC = "-", cannot be targeted by stratagems, cannot start or complete actions.',
+      'Resolve any Command Abilities (abilities that trigger in the Command phase).',
     ],
   },
   'Movement Phase': {
     summary:
-      'Move all units up to their Movement (M) characteristic in inches. Units may Advance (add D6" to move, cannot shoot normally), Fall Back, or Remain Stationary.',
+      'Move all units. Choose from: Remain Stationary, Normal Move (up to M"), Advance (M + D6", cannot shoot normally or charge), or Fall Back.',
     steps: [
-      'Declare which units will Normal Move, Advance, Fall Back, or Remain Stationary.',
-      'Move each unit up to its M value. Advancing units add D6" but cannot shoot (except Assault weapons).',
-      'Units cannot move within 1" of enemy models unless Falling Back.',
-      'Disembark from transports before the transport moves (or after if it Remains Stationary).',
+      'Select each unit in turn and choose its move type.',
+      'Normal Move: up to M" while unengaged; must be unengaged after.',
+      'Advance: up to M + D6"; cannot shoot (except Assault weapons), declare charges, or start actions until end of turn.',
+      'Fall Back (engaged units only): choose a mode — Ordered Retreat (non-shocked; safe fall back) or Desperate Escape (battle-shocked; each model makes a hazard roll, models can move through enemies). After falling back, cannot shoot, charge, or start actions.',
+      'Strategic reserves can also arrive via Ingress moves this phase.',
     ],
   },
   'Shooting Phase': {
     summary:
-      'Units that are eligible to shoot select targets and resolve ranged attacks. Use the Combat Calculator to determine average wounds before rolling dice.',
+      'Eligible units shoot with their ranged weapons. Choose a shooting type for each unit: Normal, Assault, Close-quarters, or Indirect.',
     steps: [
-      'Select a unit to shoot with (must not have Fallen Back or Advanced, unless special rules apply).',
-      'Choose targets within range and line of sight.',
-      'Resolve attacks: Hit roll (vs BS) → Wound roll (vs Strength/Toughness) → Save roll (vs AP).',
-      'Apply damage to target unit\'s wounds. Use the Combat Calculator below for reference.',
+      'Select an eligible unit to shoot (must not be battle-shocked beyond eligibility checks).',
+      'Normal Shooting: unit is unengaged and did not Advance. Select targets within range and line of sight.',
+      'Assault Shooting: unit Advanced but has [ASSAULT] weapons — can only fire those weapons.',
+      'Close-quarters Shooting: unit is engaged. Monsters/Vehicles can fire all weapons at -1 to hit (except [CLOSE-QUARTERS] weapons vs their engaged target). Others can only use [CLOSE-QUARTERS] weapons.',
+      'Indirect Shooting: unit has [INDIRECT FIRE] weapons; can target units not visible. Auto-fail on 1–5 unless stationary with a spotter (1–3 fail). Cannot re-roll hit rolls. Target has Benefit of Cover.',
+      'Resolve attacks: Hit roll (vs BS) → Wound roll → Save roll → Apply damage.',
     ],
   },
   'Charge Phase': {
     summary:
-      'Units may attempt a Charge to move into engagement range (within 1") of an enemy unit. Roll 2D6 — the charge succeeds if the result equals or exceeds the distance.',
+      'Units charge to engage the enemy in close combat. The charge roll is made first — then targets are selected based on the distance rolled.',
     steps: [
-      'Declare a charge with any eligible unit (not within Engagement Range, not Advanced unless special rule).',
-      'Select the unit(s) being charged.',
-      'Roll 2D6 — result must equal or exceed the distance to the nearest model of the target unit.',
-      'If successful, move the charging unit into Engagement Range (within 1"). Charged units may fire Overwatch (if eligible).',
+      'Declare which unit is charging (must be within 12" of an enemy, unengaged, and not having Advanced or Fallen Back).',
+      'Make the charge roll: roll 2D6 — this is the maximum distance for the charge move.',
+      'Select charge targets: one or more enemy units within 12" AND within the rolled distance.',
+      'Make the charge move: each model moves toward charge targets; must end within 1" of a target if possible.',
+      'After a successful charge, all models in the charging unit gain the Fights First ability until end of turn.',
+      'Fire Overwatch (stratagem) can be used at the end of the Movement phase, not in reaction to individual charges.',
     ],
   },
   'Fight Phase': {
     summary:
-      'Units in Engagement Range (within 1" of enemy) fight in melee. The player whose turn it is fights first, then the opponent. Use the Combat Calculator for melee attacks.',
+      'All pile-in moves happen first, then all combats are fought, then consolidation. Both players\' units participate.',
     steps: [
-      'Active player selects one of their units in Engagement Range to fight.',
-      'Opponent may then select one of their units that was charged or is in Engagement Range to fight.',
-      'Players alternate selecting units to fight until all eligible units have fought.',
-      'Resolve attacks: Hit roll (vs WS) → Wound roll → Save roll → Apply damage.',
-      'Destroyed models are removed. Units below half strength may need to take Battle-shock tests.',
-    ],
-  },
-  'Morale Phase': {
-    summary:
-      'Units that have suffered casualties may need to take Battle-shock tests. A failed test (rolling above Leadership on 2D6) means the unit is Battle-shocked and cannot use special abilities until the start of their next Command Phase.',
-    steps: [
-      'Units below half their starting strength must take a Battle-shock test.',
-      'Roll 2D6: if the result is greater than the unit\'s Leadership (LD) characteristic, the unit is Battle-shocked.',
-      'Battle-shocked units cannot use Stratagems and their OC counts as 0 until their next Command Phase.',
-      'Character units attached to a unit use their own LD for the test.',
+      '1. PILE IN: Both players make pile-in moves (up to 3") with eligible units — active player first, then opponent. Models in base-contact with enemies cannot move.',
+      '2. FIGHT: Resolve Fights First units first (active player selects one, then opponent alternates). Then resolve remaining combats, alternating.',
+      'A unit with Fights First fights before other units in its priority bracket.',
+      'Overrun Fight: a unit that was unengaged (or became unengaged mid-phase) can make an extra pile-in move then fight.',
+      '3. CONSOLIDATE: Both players make consolidation moves (up to 3") — active player first. Must use Ongoing mode (if engaged), Engaging mode (if within 3" of enemy), or Objective mode (if within 3" of objective). Consolidating into new enemies forces those enemies to fight.',
+      'Resolve attacks each fight: Hit roll (vs WS) → Wound roll → Save roll → Apply damage.',
     ],
   },
 };
