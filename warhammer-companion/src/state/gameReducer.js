@@ -28,6 +28,10 @@ const initialState = {
   gameType: 'Matched Play',
   mission: null,
   totalRounds: 5,
+  firstTurn: 1,
+
+  // Victory Points
+  vp: { 1: 0, 2: 0 },
 
   // Battle Tracker
   currentRound: 1,
@@ -87,6 +91,8 @@ export function gameReducer(state, action) {
       return { ...state, mission: action.mission };
     case 'SET_TOTAL_ROUNDS':
       return { ...state, totalRounds: Math.max(1, Math.min(10, action.rounds)) };
+    case 'SET_FIRST_TURN':
+      return { ...state, firstTurn: action.player };
     case 'START_BATTLE': {
       const battleUnits = {};
       const buildUnits = (army, owner) => {
@@ -107,11 +113,12 @@ export function gameReducer(state, action) {
         appPhase: APP_PHASES.BATTLE_TRACKER,
         battleUnits,
         currentRound: 1,
-        currentTurn: 1,
+        currentTurn: state.firstTurn || 1,
         currentPhaseIndex: 0,
         // 11th ed: both players gain 1 CP in every Command Phase.
         // P1's first Command Phase has fired, so both start with 1 CP.
         cp: { 1: 1, 2: 1 },
+        vp: { 1: 0, 2: 0 },
         activeStratagems: [],
       };
     }
@@ -152,6 +159,11 @@ export function gameReducer(state, action) {
     }
 
     // ── CP Management ─────────────────────────────────────────────────────────
+    case 'ADJUST_VP': {
+      const { player, delta } = action;
+      const newVal = Math.max(0, (state.vp[player] || 0) + delta);
+      return { ...state, vp: { ...state.vp, [player]: newVal } };
+    }
     case 'ADJUST_CP': {
       const { player, delta } = action;
       const newVal = Math.max(0, (state.cp[player] || 0) + delta);

@@ -7,32 +7,18 @@ import StratagemPanel from './StratagemPanel.jsx';
 
 const CALC_PHASES = ['Shooting Phase', 'Fight Phase'];
 
-function CpDisplay({ player, cp, dispatch, color }) {
-  const val = cp[player] || 0;
-  return (
-    <div className="cp-display" style={{ borderColor: color }}>
-      <span className="cp-label">P{player} CP</span>
-      <button
-        className="btn btn-sm btn-icon cp-btn"
-        onClick={() => dispatch({ type: 'ADJUST_CP', player, delta: -1 })}
-        disabled={val === 0}
-      >−</button>
-      <span className="cp-value" style={{ color }}>{val}</span>
-      <button
-        className="btn btn-sm btn-icon cp-btn"
-        onClick={() => dispatch({ type: 'ADJUST_CP', player, delta: 1 })}
-      >+</button>
-    </div>
-  );
-}
+const PHASE_LABELS = ['Command', 'Movement', 'Shooting', 'Charge', 'Fight'];
 
 export default function BattleTracker({ state, dispatch }) {
-  const { battleUnits, currentRound, currentTurn, currentPhaseIndex, totalRounds, cp, activeStratagems } = state;
+  const {
+    battleUnits, currentRound, currentTurn, currentPhaseIndex,
+    totalRounds, cp, vp, activeStratagems,
+    player1Army, player2Army,
+  } = state;
   const [showDestroyed, setShowDestroyed] = useState(false);
   const [showStratagems, setShowStratagems] = useState(false);
 
   const currentPhase = PHASES[currentPhaseIndex];
-  // 11th ed: battle-shock is checked during the Command Phase (no separate Morale Phase).
   const isMoralePhase = currentPhase === 'Command Phase';
   const showCalc = CALC_PHASES.includes(currentPhase);
 
@@ -44,63 +30,105 @@ export default function BattleTracker({ state, dispatch }) {
 
   const isLastPhase = currentPhaseIndex === PHASES.length - 1;
   const isLastRound = currentRound === totalRounds;
-  const activeColor = currentTurn === 1 ? 'var(--warning)' : 'var(--danger)';
 
-  function nextButtonLabel() {
-    if (!isLastPhase) return 'Next Phase →';
-    if (currentTurn === 1) return "Begin Player 2's Turn →";
-    if (isLastRound) return 'End Game →';
-    return `Begin Round ${currentRound + 1} →`;
+  function nextLabel() {
+    if (!isLastPhase) return 'Next';
+    if (currentTurn === 1) return 'Next';
+    if (isLastRound) return 'End';
+    return 'Next';
   }
 
+  const p1Faction = player1Army.length > 0 ? player1Army[0].faction : 'Player 1';
+  const p2Faction = player2Army.length > 0 ? player2Army[0].faction : 'Player 2';
+
   return (
-    <div>
-      {/* Phase Banner */}
-      <div className="phase-banner" style={{ borderColor: activeColor }}>
-        <div>
-          <div className="round-label">Battle Round</div>
-          <div className="round-num" style={{ color: activeColor }}>{currentRound}</div>
-          <div className="round-label">of {totalRounds}</div>
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: 'var(--font-head)', fontSize: '14px', color: activeColor, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px', fontWeight: 700 }}>
-            Player {currentTurn}'s Turn
+    <div className="battle-page">
+      {/* Header */}
+      <header className="battle-header">
+        <button
+          className="btn btn-sm btn-danger"
+          onClick={() => {
+            if (window.confirm('Quit the game? All progress will be lost.')) {
+              dispatch({ type: 'RESET' });
+            }
+          }}
+        >
+          Quit game
+        </button>
+        <h1 className="battle-header__turn">Player {currentTurn}'s turn</h1>
+        <button className="btn btn-primary btn-next" onClick={() => dispatch({ type: 'NEXT_PHASE' })}>
+          {nextLabel()}
+          <svg viewBox="0 0 12 10" fill="currentColor" width="10" height="10">
+            <path d="M7 0l5 5-5 5-1.4-1.4L8.2 6H0V4h8.2L5.6 1.4z"/>
+          </svg>
+        </button>
+      </header>
+
+      {/* Scoreboard */}
+      <div className="battle-scoreboard">
+        {/* Player 1 side */}
+        <div className="battle-scoreboard__side battle-scoreboard__side--left">
+          <div className="battle-scoreboard__faction">{p1Faction}</div>
+          <div className="battle-scoreboard__objectives">
+            <div className="battle-scoreboard__score-item">
+              <div className="battle-scoreboard__score-label">VP</div>
+              <div className="battle-scoreboard__score-value">{String(vp?.[1] ?? 0).padStart(2, '0')}</div>
+            </div>
+            <div className="battle-scoreboard__score-item">
+              <div className="battle-scoreboard__score-label">CP</div>
+              <div className="battle-scoreboard__score-value">{String(cp[1] || 0).padStart(2, '0')}</div>
+            </div>
           </div>
-          <div className="phase-name">{currentPhase}</div>
-          <div style={{ display: 'flex', gap: '4px', marginTop: '8px', flexWrap: 'wrap' }}>
-            {PHASES.map((ph, i) => (
-              <span
-                key={ph}
-                style={{
-                  fontFamily: 'var(--font-head)',
-                  fontSize: '10px',
-                  padding: '2px 7px',
-                  borderRadius: '2px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
-                  background: i === currentPhaseIndex ? activeColor : 'var(--surface-2)',
-                  color: i === currentPhaseIndex ? '#1a1208' : i < currentPhaseIndex ? 'var(--border-em)' : 'var(--text-muted)',
-                  border: `1px solid ${i === currentPhaseIndex ? activeColor : 'var(--border-sub)'}`,
-                }}
-              >
-                {ph.replace(' Phase', '')}
-              </span>
-            ))}
+          <div className="battle-scoreboard__buttons">
+            <button className="btn btn-sm" onClick={() => dispatch({ type: 'ADJUST_VP', player: 1, delta: -1 })} disabled={(vp?.[1] ?? 0) === 0}>−VP</button>
+            <button className="btn btn-sm" onClick={() => dispatch({ type: 'ADJUST_VP', player: 1, delta: 1 })}>+VP</button>
+            <button className="btn btn-sm" onClick={() => dispatch({ type: 'ADJUST_CP', player: 1, delta: -1 })} disabled={(cp[1] || 0) === 0}>−CP</button>
+            <button className="btn btn-sm" onClick={() => dispatch({ type: 'ADJUST_CP', player: 1, delta: 1 })}>+CP</button>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
-          <button className="btn btn-primary" onClick={() => dispatch({ type: 'NEXT_PHASE' })}>
-            {nextButtonLabel()}
-          </button>
-          <button className="btn btn-sm btn-danger" onClick={() => dispatch({ type: 'END_GAME' })}>
-            End Game Early
-          </button>
+
+        {/* Round circle */}
+        <div className="battle-scoreboard__round">
+          <div className="battle-round-circle">
+            <div className="battle-round-circle__num">{currentRound}</div>
+            <div className="battle-round-circle__label">Battle round</div>
+          </div>
+        </div>
+
+        {/* Player 2 side */}
+        <div className="battle-scoreboard__side battle-scoreboard__side--right">
+          <div className="battle-scoreboard__objectives">
+            <div className="battle-scoreboard__score-item">
+              <div className="battle-scoreboard__score-value">{String(vp?.[2] ?? 0).padStart(2, '0')}</div>
+              <div className="battle-scoreboard__score-label">VP</div>
+            </div>
+            <div className="battle-scoreboard__score-item">
+              <div className="battle-scoreboard__score-value">{String(cp[2] || 0).padStart(2, '0')}</div>
+              <div className="battle-scoreboard__score-label">CP</div>
+            </div>
+          </div>
+          <div className="battle-scoreboard__faction">{p2Faction}</div>
+          <div className="battle-scoreboard__buttons">
+            <button className="btn btn-sm" onClick={() => dispatch({ type: 'ADJUST_VP', player: 2, delta: -1 })} disabled={(vp?.[2] ?? 0) === 0}>−VP</button>
+            <button className="btn btn-sm" onClick={() => dispatch({ type: 'ADJUST_VP', player: 2, delta: 1 })}>+VP</button>
+            <button className="btn btn-sm" onClick={() => dispatch({ type: 'ADJUST_CP', player: 2, delta: -1 })} disabled={(cp[2] || 0) === 0}>−CP</button>
+            <button className="btn btn-sm" onClick={() => dispatch({ type: 'ADJUST_CP', player: 2, delta: 1 })}>+CP</button>
+          </div>
         </div>
       </div>
 
-      {/* CP Bar — always visible */}
-      <div className="cp-bar">
-        <CpDisplay player={1} cp={cp} dispatch={dispatch} color="var(--warning)" />
+      {/* Phase Tabs */}
+      <div className="phase-tabs-bar">
+        <div className="phase-tabs">
+          {PHASES.map((ph, i) => (
+            <div
+              key={ph}
+              className={`phase-tab ${i === currentPhaseIndex ? 'phase-tab--active' : i < currentPhaseIndex ? 'phase-tab--done' : ''}`}
+            >
+              {PHASE_LABELS[i]}
+            </div>
+          ))}
+        </div>
         <button
           className={`btn btn-sm cp-stratagem-btn${activeStratagems.length > 0 ? ' has-active' : ''}`}
           onClick={() => setShowStratagems(true)}
@@ -110,79 +138,66 @@ export default function BattleTracker({ state, dispatch }) {
             <span className="cp-active-badge">{activeStratagems.length}</span>
           )}
         </button>
-        <CpDisplay player={2} cp={cp} dispatch={dispatch} color="var(--danger)" />
       </div>
 
       {/* Phase Guide */}
-      <PhaseGuide phaseIndex={currentPhaseIndex} />
+      <div className="main-content-inner">
+        <PhaseGuide phaseIndex={currentPhaseIndex} />
 
-      {/* Unit Battlefield Grid */}
-      <div className="battle-grid">
-        {[1, 2].map((player) => {
-          const active = player === 1 ? p1Active : p2Active;
-          const dead   = player === 1 ? p1Dead   : p2Dead;
-          const color  = player === 1 ? 'var(--warning)' : 'var(--danger)';
-          const isActive = currentTurn === player;
-          // Stratagems affecting units owned by this player
-          const unitStratagems = activeStratagems.filter((s) => s.owner === player && s.instanceId);
-          return (
-            <div key={player}>
-              <div
-                style={{
-                  background: 'var(--surface-2)',
-                  border: `1px solid ${isActive ? color : 'var(--border-em)'}`,
-                  borderTop: `3px solid ${color}`,
-                  padding: '10px 14px',
-                  marginBottom: '10px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h3 className="heading" style={{ fontSize: '16px' }}>Player {player}</h3>
-                  {isActive && <span className="badge badge-active">Active</span>}
+        {/* Unit Grid */}
+        <div className="battle-grid">
+          {[1, 2].map((player) => {
+            const active = player === 1 ? p1Active : p2Active;
+            const dead   = player === 1 ? p1Dead : p2Dead;
+            const isActive = currentTurn === player;
+            const unitStratagems = activeStratagems.filter((s) => s.owner === player && s.instanceId);
+            const faction = player === 1 ? p1Faction : p2Faction;
+            return (
+              <div key={player}>
+                <div className={`battle-player-header ${isActive ? 'battle-player-header--active' : ''}`}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h3 className="heading" style={{ fontSize: '16px' }}>{faction}</h3>
+                    {isActive && <span className="badge badge-active">Active</span>}
+                  </div>
+                  <span className="text-muted text-sm">
+                    {active.length} active · {dead.length} destroyed
+                  </span>
                 </div>
-                <span style={{ fontFamily: 'var(--font-head)', fontSize: '12px', color: 'var(--text-muted)' }}>
-                  {active.length} active · {dead.length} destroyed
-                </span>
+
+                {active.length === 0 && (
+                  <p className="text-muted text-sm" style={{ padding: '8px' }}>All units destroyed.</p>
+                )}
+                {active.map((unit) => (
+                  <UnitCard
+                    key={unit.instanceId}
+                    unit={unit}
+                    dispatch={dispatch}
+                    isMoralePhase={isMoralePhase && isActive}
+                    currentPhase={isActive ? currentPhase : null}
+                    activeStratagems={unitStratagems.filter((s) => s.instanceId === unit.instanceId)}
+                  />
+                ))}
+                {showDestroyed && dead.map((unit) => (
+                  <UnitCard key={unit.instanceId} unit={unit} dispatch={dispatch} isMoralePhase={false} currentPhase={null} activeStratagems={[]} />
+                ))}
               </div>
-              {active.length === 0 && (
-                <p className="text-muted text-sm" style={{ padding: '8px' }}>All units destroyed.</p>
-              )}
-              {active.map((unit) => (
-                <UnitCard
-                  key={unit.instanceId}
-                  unit={unit}
-                  dispatch={dispatch}
-                  isMoralePhase={isMoralePhase && isActive}
-                  currentPhase={isActive ? currentPhase : null}
-                  activeStratagems={unitStratagems.filter((s) => s.instanceId === unit.instanceId)}
-                />
-              ))}
-              {showDestroyed && dead.map((unit) => (
-                <UnitCard key={unit.instanceId} unit={unit} dispatch={dispatch} isMoralePhase={false} currentPhase={null} activeStratagems={[]} />
-              ))}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        {(p1Dead.length > 0 || p2Dead.length > 0) && (
+          <div style={{ margin: '8px 0 16px' }}>
+            <button className="btn btn-sm" onClick={() => setShowDestroyed((v) => !v)}>
+              {showDestroyed ? '▲ Hide' : '▼ Show'} Destroyed Units ({p1Dead.length + p2Dead.length})
+            </button>
+          </div>
+        )}
+
+        {showCalc && (
+          <CombatCalculator battleUnits={battleUnits} dispatch={dispatch} player={currentTurn} currentPhase={currentPhase} />
+        )}
       </div>
 
-      {/* Destroyed units toggle */}
-      {(p1Dead.length > 0 || p2Dead.length > 0) && (
-        <div style={{ marginTop: '8px', marginBottom: '16px' }}>
-          <button className="btn btn-sm" onClick={() => setShowDestroyed((v) => !v)}>
-            {showDestroyed ? '▲ Hide' : '▼ Show'} Destroyed Units ({p1Dead.length + p2Dead.length})
-          </button>
-        </div>
-      )}
-
-      {/* Combat Calculator */}
-      {showCalc && (
-        <CombatCalculator battleUnits={battleUnits} dispatch={dispatch} player={currentTurn} currentPhase={currentPhase} />
-      )}
-
-      {/* Stratagem Panel */}
       {showStratagems && (
         <StratagemPanel
           currentPhase={currentPhase}

@@ -19,17 +19,19 @@ function PlayerPanel({ player, faction, army, confirmed, dispatch }) {
   return (
     <div className="army-player-panel">
       <div className="army-player-header">
-        <h2 className="heading">Player {player}</h2>
-        <div>
-          <span className="points-label">Total: </span>
-          <span className="points-total">{totalPoints(army)} pts</span>
+        <div className="army-player-header__identity">
+          <svg className="army-player-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+          </svg>
+          <h2 className="heading">Player {player}</h2>
         </div>
+        <span className="points-total">{totalPoints(army)} pts</span>
       </div>
 
       {!confirmed ? (
         <>
-          {/* Faction selector */}
-          <div style={{ padding: '12px', borderBottom: '1px solid var(--border-sub)' }}>
+          <div className="army-section">
             <label>Faction</label>
             <select
               value={selectedFaction}
@@ -41,13 +43,8 @@ function PlayerPanel({ player, faction, army, confirmed, dispatch }) {
             </select>
           </div>
 
-          {/* Unit roster */}
-          <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-sub)' }}>
-            <div className="panel-header" style={{ marginBottom: '6px', paddingBottom: '6px' }}>
-              <h3 className="heading" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                Available Units — click to add
-              </h3>
-            </div>
+          <div className="army-section army-section--units">
+            <div className="army-section__label">Available units</div>
             <div className="army-roster">
               {roster.map((unit) => (
                 <div
@@ -59,26 +56,24 @@ function PlayerPanel({ player, faction, army, confirmed, dispatch }) {
                     {unit.type}
                   </span>
                   <span className="unit-roster-item-name">{unit.name}</span>
-                  <span style={{ fontFamily: 'var(--font-head)', fontSize: '12px', color: 'var(--gold)' }}>
-                    {unit.points} pts
-                  </span>
+                  <span className="unit-roster-item-pts">{unit.points} pts</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Selected army list */}
-          <div style={{ padding: '12px' }}>
-            <div className="panel-header" style={{ marginBottom: '6px', paddingBottom: '6px' }}>
-              <h3 className="heading" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                Army List ({army.length} unit{army.length !== 1 ? 's' : ''})
-              </h3>
-            </div>
-            <div className="army-list" style={{ padding: 0, minHeight: '60px' }}>
+          <div className="army-section">
+            <div className="army-section__label">
+              Army list
               {army.length === 0 && (
-                <p className="text-muted text-sm" style={{ padding: '8px 0' }}>
-                  No units selected. Click units above to add them.
-                </p>
+                <span className="army-section__sublabel"> — no units selected</span>
+              )}
+            </div>
+            <div className="army-list" style={{ padding: 0, minHeight: '54px' }}>
+              {army.length === 0 && (
+                <div className="army-empty-state">
+                  No units selected
+                </div>
               )}
               {army.map((unit) => (
                 <div key={unit.instanceId} className="army-list-item">
@@ -99,44 +94,22 @@ function PlayerPanel({ player, faction, army, confirmed, dispatch }) {
               ))}
             </div>
 
-            <div style={{ marginTop: '12px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              {army.length > 0 && (
+            {army.length > 0 && !confirmed && (
+              <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
                 <button
                   className="btn btn-primary"
                   onClick={() => dispatch({ type: 'CONFIRM_ARMY', player })}
                 >
                   Confirm Army
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </>
       ) : (
-        /* Confirmed view */
-        <div style={{ padding: '12px' }}>
-          <div
-            style={{
-              background: 'var(--surface-2)',
-              border: '1px solid var(--warning)',
-              padding: '8px 12px',
-              marginBottom: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
-            <span style={{ color: 'var(--warning)', fontSize: '16px' }}>✔</span>
-            <span
-              style={{
-                fontFamily: 'var(--font-head)',
-                fontSize: '13px',
-                color: 'var(--warning)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-              }}
-            >
-              Army Confirmed
-            </span>
+        <div className="army-section">
+          <div className="army-confirmed-badge">
+            <span>✔</span> Army Confirmed
           </div>
           {army.map((unit) => (
             <div key={unit.instanceId} className="army-list-item">
@@ -167,15 +140,10 @@ export default function ArmyBuilder({ state, dispatch }) {
   const bothHaveUnits = player1Army.length > 0 && player2Army.length > 0;
 
   return (
-    <div>
-      <div style={{ marginBottom: '20px' }}>
-        <h2 className="heading" style={{ fontSize: '20px', color: 'var(--gold)', marginBottom: '6px' }}>
-          Phase 1 — Army Builder
-        </h2>
-        <p className="text-muted text-sm">
-          Each player selects their units from the roster. Confirm both armies to proceed to mission setup.
-          Units may be added multiple times to represent multiple squads or models.
-        </p>
+    <div className="phase-page">
+      <div className="phase-page__header">
+        <div className="phase-page__label">Phase 1</div>
+        <h2 className="phase-page__title heading">Army builder</h2>
       </div>
 
       <div className="army-builder-grid">
@@ -195,26 +163,22 @@ export default function ArmyBuilder({ state, dispatch }) {
         />
       </div>
 
-      {bothConfirmed && bothHaveUnits && (
-        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
+      <div className="phase-page__footer">
+        {!bothConfirmed && (
+          <span className="text-muted text-sm">Both players must confirm their armies before proceeding.</span>
+        )}
+        {bothConfirmed && bothHaveUnits && (
           <button
-            className="btn btn-primary"
-            style={{ fontSize: '15px', padding: '12px 36px' }}
+            className="btn btn-primary btn-next"
             onClick={() => dispatch({ type: 'ADVANCE_TO_MISSION' })}
           >
-            Proceed to Mission Setup →
+            Mission setup
+            <svg viewBox="0 0 12 10" fill="currentColor" width="12" height="10">
+              <path d="M7 0l5 5-5 5-1.4-1.4L8.2 6H0V4h8.2L5.6 1.4z"/>
+            </svg>
           </button>
-        </div>
-      )}
-
-      {!bothConfirmed && (
-        <p
-          className="text-muted text-sm"
-          style={{ textAlign: 'center', marginTop: '16px' }}
-        >
-          Both players must confirm their armies before proceeding.
-        </p>
-      )}
+        )}
+      </div>
     </div>
   );
 }
