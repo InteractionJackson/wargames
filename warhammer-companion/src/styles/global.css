@@ -96,45 +96,475 @@ h1, h2, h3, h4, h5, h6,
 
 .page-header {
   background: var(--surface-1);
-  border-bottom: 2px solid var(--gold);
-  padding: var(--space-3) var(--space-9);
+  border-bottom: 1px solid var(--border-sub);
+  padding: var(--space-6) var(--space-10);
   display: flex;
   align-items: center;
-  gap: var(--space-7);
 }
 
 .page-header h1 {
-  font-size: var(--text-sub);
-  color: var(--gold);
+  font-size: var(--text-body-lg);
+  color: var(--white);
   font-weight: 300;
   letter-spacing: -0.22px;
 }
 
-.phase-indicator {
-  margin-left: auto;
-  font-family: var(--font-head);
-  font-size: var(--text-caption);
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.phase-indicator span {
-  color: var(--gold);
-}
-
 .main-content {
   flex: 1;
-  padding: var(--space-9);
+  padding: 0;
+  width: 100%;
+}
+
+.main-content--battle {
+  padding: 0;
+}
+
+.main-content-inner {
+  padding: var(--space-7) var(--space-10);
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
 }
 
 @media (max-width: 640px) {
-  .main-content {
+  .main-content-inner {
     padding: var(--space-7);
   }
+}
+
+/* ── Phase Page (Army Builder & Mission Setup) ─────── */
+.phase-page {
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 57px);
+}
+
+.phase-page__header {
+  padding: var(--space-10) var(--space-10) var(--space-7);
+}
+
+.phase-page__label {
+  font-family: var(--font-head);
+  font-size: var(--text-body-lg);
+  color: var(--text-muted);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-2);
+}
+
+.phase-page__title {
+  font-size: var(--text-section);
+  color: var(--white);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+}
+
+.phase-page__footer {
+  margin-top: auto;
+  padding: var(--space-9) var(--space-10);
+  border-top: 1px solid var(--border-sub);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-7);
+}
+
+/* ── Back button ──────────────────────────────────── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+.back-btn:hover { color: var(--white); }
+
+/* ── Next button with arrow ───────────────────────── */
+.btn-next {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-7);
+}
+
+/* ── Army Builder ─────────────────────────────────── */
+.army-section {
+  padding: var(--space-6) var(--space-7);
+  border-top: 1px solid var(--border-sub);
+}
+
+.army-section--units {
+  padding-bottom: 0;
+}
+
+.army-section__label {
+  font-family: var(--font-head);
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-4);
+}
+
+.army-section__sublabel {
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-body);
+}
+
+.army-empty-state {
+  font-size: var(--text-body);
+  color: var(--text-muted);
+  padding: var(--space-4) var(--space-3);
+}
+
+.army-confirmed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: rgba(120, 152, 40, 0.12);
+  border: 1px solid var(--warning);
+  color: var(--warning);
+  font-family: var(--font-head);
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: var(--space-2) var(--space-5);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-std);
+}
+
+.army-player-header__identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.army-player-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--text-muted);
+}
+
+.unit-roster-item-pts {
+  font-family: var(--font-head);
+  font-size: var(--text-caption);
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Mission Setup layout ─────────────────────────── */
+.mission-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-9);
+  padding: 0 var(--space-10) var(--space-10);
+}
+
+@media (max-width: 900px) {
+  .mission-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mission-section {
+  margin-bottom: var(--space-9);
+}
+
+.mission-section__title {
+  font-family: var(--font-head);
+  font-size: var(--text-body-lg);
+  color: var(--white);
+  font-weight: 300;
+  margin-bottom: var(--space-6);
+}
+
+/* ── Option Tabs (game type, stepper, first turn) ─── */
+.option-tabs {
+  display: flex;
+  border: 1px solid var(--border-em);
+  border-radius: var(--radius-std);
+  overflow: hidden;
+}
+
+.option-tab {
+  flex: 1;
+  background: var(--surface-2);
+  border: none;
+  border-right: 1px solid var(--border-em);
+  padding: var(--space-4) var(--space-6);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-align: center;
+}
+
+.option-tab:last-child {
+  border-right: none;
+}
+
+.option-tab--active {
+  background: var(--surface-1);
+  color: var(--white);
+}
+
+.option-tab--icon {
+  flex: 0 0 60px;
+  font-size: var(--text-body-lg);
+}
+
+.option-tab--value {
+  flex: 0 0 60px;
+  font-family: var(--font-head);
+  font-size: var(--text-body-lg);
+  color: var(--white);
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  background: var(--surface-1);
+}
+
+.option-tab--wide {
+  flex: 1;
+}
+
+/* ── Mission sidebar summary ──────────────────────── */
+.mission-sidebar {
+  padding-top: 0;
+}
+
+.mission-summary {
+  background: var(--surface-1);
+  border: 1px solid var(--border-sub);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.mission-summary__title {
+  font-family: var(--font-head);
+  font-size: var(--text-body-lg);
+  color: var(--white);
+  font-weight: 300;
+  padding: var(--space-6) var(--space-7);
+  border-bottom: 1px solid var(--border-sub);
+}
+
+.mission-summary__body {
+  padding: var(--space-6) var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.mission-summary__item-label {
+  font-family: var(--font-head);
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-1);
+}
+
+.mission-summary__item-value {
+  font-family: var(--font-head);
+  font-size: var(--text-body-lg);
+  color: var(--white);
+  font-weight: 300;
+}
+
+.mission-summary__footer {
+  padding: var(--space-2) var(--space-7) var(--space-7);
+}
+
+.mission-summary__footer .btn-next {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ── Battle Tracker Page ──────────────────────────── */
+.battle-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Battle Header */
+.battle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-10);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-sub);
+  height: 85px;
+}
+
+.battle-header__turn {
+  font-family: var(--font-head);
+  font-size: var(--text-sub);
+  color: var(--white);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+/* Battle Scoreboard */
+.battle-scoreboard {
+  display: flex;
+  align-items: center;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-sub);
+  padding: var(--space-8) var(--space-10);
+  min-height: 100px;
+}
+
+.battle-scoreboard__side {
+  flex: 1;
+}
+
+.battle-scoreboard__side--left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-7);
+}
+
+.battle-scoreboard__side--right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-7);
+}
+
+.battle-scoreboard__faction {
+  font-family: var(--font-head);
+  font-size: var(--text-sub);
+  color: var(--white);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.battle-scoreboard__objectives {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.battle-scoreboard__score-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.battle-scoreboard__score-label {
+  font-family: var(--font-head);
+  font-size: var(--text-body);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.battle-scoreboard__score-value {
+  font-family: var(--font-head);
+  font-size: var(--text-sub);
+  color: var(--white);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.battle-scoreboard__buttons {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.battle-round-circle {
+  width: 120px;
+  height: 120px;
+  border: 2px solid var(--border-em);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.battle-round-circle__num {
+  font-family: var(--font-head);
+  font-size: var(--text-section);
+  color: var(--white);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.battle-round-circle__label {
+  font-family: var(--font-head);
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Phase Tabs */
+.phase-tabs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-sub);
+  padding: 0 var(--space-10);
+}
+
+.phase-tabs {
+  display: flex;
+}
+
+.phase-tab {
+  padding: var(--space-5) var(--space-7);
+  font-family: var(--font-head);
+  font-size: var(--text-body);
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  cursor: default;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.phase-tab--active {
+  color: var(--white);
+  border-bottom-color: var(--white);
+}
+
+.phase-tab--done {
+  color: var(--border-em);
+}
+
+/* Battle player section header */
+.battle-player-header {
+  background: var(--surface-2);
+  border: 1px solid var(--border-em);
+  padding: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: var(--radius-std);
+}
+
+.battle-player-header--active {
+  border-color: var(--gold-dim);
 }
 
 /* ── Panel / Card ─────────────────────────────────────── */
@@ -1067,9 +1497,14 @@ label {
 /* ── Mission Setup ────────────────────────────────────── */
 .mission-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-6);
-  margin-top: var(--space-6);
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 800px) {
+  .mission-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .mission-card {
