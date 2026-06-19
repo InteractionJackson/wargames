@@ -70,6 +70,24 @@ function DiceValue({ val }) {
   return <>{str}</>;
 }
 
+function ModelRow({ index }) {
+  return (
+    <div className="model-row">
+      <span className="model-row-index">#{index + 1}</span>
+    </div>
+  );
+}
+
+function ModelList({ modelCount }) {
+  return (
+    <div className="model-list">
+      {Array.from({ length: modelCount }).map((_, i) => (
+        <ModelRow key={i} index={i} />
+      ))}
+    </div>
+  );
+}
+
 function PhaseHint({ unit, currentPhase }) {
   if (!currentPhase || unit.destroyed) return null;
 
@@ -353,6 +371,16 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
               </span>
             ))}
           </div>
+
+          {/* Model list */}
+          {unit.modelCount > 0 && (
+            <div style={{ marginTop: '8px' }}>
+              <div style={{ fontFamily: 'var(--font-head)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                Models ({unit.modelCount})
+              </div>
+              <ModelList modelCount={unit.modelCount} />
+            </div>
+          )}
         </div>
       )}
     </div>
