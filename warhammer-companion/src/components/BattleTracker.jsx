@@ -10,6 +10,19 @@ import StratagemPanel from './StratagemPanel.jsx';
 
 const CALC_PHASES = ['Shooting Phase', 'Fight Phase'];
 
+function FactionGroupHeader({ faction, isActive, activeCount, destroyedCount }) {
+  return (
+    <div className="faction-group-header">
+      <div className="faction-group-header__left">
+        <h3 className="faction-group-header__name">{faction}</h3>
+      </div>
+      <span className="faction-group-header__count">
+        {activeCount} active · {destroyedCount} destroyed
+      </span>
+    </div>
+  );
+}
+
 export default function GameScreen({ state, dispatch }) {
   const {
     battleUnits, currentRound, currentTurn, currentPhaseIndex,
@@ -91,15 +104,12 @@ export default function GameScreen({ state, dispatch }) {
             const faction = player === 1 ? p1Faction : p2Faction;
             return (
               <div key={player}>
-                <div className={`battle-player-header ${isActive ? 'battle-player-header--active' : ''}`}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <h3 className="heading" style={{ fontSize: '16px' }}>{faction}</h3>
-                    {isActive && <span className="badge badge-active">Active</span>}
-                  </div>
-                  <span className="text-muted text-sm">
-                    {active.length} active · {dead.length} destroyed
-                  </span>
-                </div>
+                <FactionGroupHeader
+                  faction={faction}
+                  isActive={isActive}
+                  activeCount={active.length}
+                  destroyedCount={dead.length}
+                />
 
                 {active.length === 0 && (
                   <p className="text-muted text-sm" style={{ padding: '8px' }}>All units destroyed.</p>
