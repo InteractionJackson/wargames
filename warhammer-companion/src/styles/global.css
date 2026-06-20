@@ -406,56 +406,168 @@ h1, h2, h3, h4, h5, h6,
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: var(--space-4) var(--space-10);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-sub);
+}
+
+.top-bar__spacer {
+  width: 119px;
+}
+
+.quit-game-btn {
+  font-family: var(--font-head);
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid var(--border-em);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.quit-game-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.turn-indicator {
+  font-family: var(--font-head);
+  font-size: var(--text-body);
+  color: var(--text);
+  font-weight: 300;
+  text-align: center;
+}
+
+/* ── BattleHeader panel ───────────────────────────── */
+.battle-header-panel {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--space-7);
   padding: var(--space-5) var(--space-10);
   background: var(--surface-1);
   border-bottom: 1px solid var(--border-sub);
-  height: 85px;
+  align-items: center;
 }
 
-.battle-header__turn {
+.faction-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.faction-header--right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.faction-name {
   font-family: var(--font-head);
   font-size: var(--text-sub);
-  color: var(--white);
   font-weight: 300;
+  color: var(--white);
   letter-spacing: -0.02em;
 }
 
-/* Battle Scoreboard */
-.battle-scoreboard {
+.mission-text {
   display: flex;
-  align-items: center;
-  background: var(--surface-1);
-  border-bottom: 1px solid var(--border-sub);
-  padding: var(--space-8) var(--space-10);
-  min-height: 100px;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
-.battle-scoreboard__side {
-  flex: 1;
+.mission-text__primary {
+  font-family: var(--font-head);
+  font-size: var(--text-label);
+  color: var(--gold-dim);
+  font-weight: 300;
 }
 
-.battle-scoreboard__side--left {
-  display: flex;
-  align-items: center;
-  gap: var(--space-7);
+.mission-text__secondary {
+  font-family: var(--font-head);
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.battle-scoreboard__side--right {
+.stratagem-controls {
   display: flex;
-  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
+}
+
+.faction-header--right .stratagem-controls {
   justify-content: flex-end;
-  gap: var(--space-7);
 }
 
-.battle-scoreboard__faction {
+.stratagems-btn {
+  position: relative;
   font-family: var(--font-head);
-  font-size: var(--text-sub);
-  color: var(--white);
-  font-weight: 300;
-  letter-spacing: -0.02em;
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-3) var(--space-6);
+  background: var(--gold);
+  border: none;
+  color: #1a1208;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: background 0.15s;
+  white-space: nowrap;
 }
 
-.battle-scoreboard__objectives {
+.stratagems-btn:hover {
+  background: #d9b85c;
+}
+
+.stratagems-btn__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1208;
+  color: var(--gold);
+  font-size: 10px;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  margin-left: var(--space-2);
+  line-height: 1;
+}
+
+.roll-guide-btn {
+  font-family: var(--font-head);
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid var(--border-em);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.roll-guide-btn:hover {
+  border-color: var(--gold-dim);
+  color: var(--gold);
+}
+
+/* ── ScoreRow / ScoreStack ────────────────────────── */
+.score-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+}
+
+.score-stack {
   display: flex;
   gap: var(--space-6);
 }
@@ -468,53 +580,49 @@ h1, h2, h3, h4, h5, h6,
 
 .battle-scoreboard__score-label {
   font-family: var(--font-head);
-  font-size: var(--text-body);
-  color: var(--text-muted);
+  font-size: var(--text-caption);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  color: var(--text-muted);
 }
 
 .battle-scoreboard__score-value {
   font-family: var(--font-head);
   font-size: var(--text-sub);
-  color: var(--white);
   font-weight: 300;
+  color: var(--white);
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 
-.battle-scoreboard__buttons {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.battle-round-circle {
-  width: 120px;
-  height: 120px;
-  border: 2px solid var(--border-em);
-  border-radius: 50%;
+/* ── RoundCounter ─────────────────────────────────── */
+.round-counter {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 80px;
+  height: 80px;
+  border: 2px solid var(--border-em);
+  border-radius: 50%;
   flex-shrink: 0;
 }
 
 .battle-round-circle__num {
   font-family: var(--font-head);
   font-size: var(--text-section);
-  color: var(--white);
   font-weight: 300;
+  color: var(--white);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .battle-round-circle__label {
   font-family: var(--font-head);
-  font-size: var(--text-caption);
-  color: var(--text-muted);
+  font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  color: var(--text-muted);
 }
 
 /* Phase Tabs */
@@ -531,6 +639,29 @@ h1, h2, h3, h4, h5, h6,
   display: flex;
 }
 
+.next-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-head);
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-4) var(--space-7);
+  background: var(--warning);
+  border: none;
+  color: #0e1a06;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.next-btn:hover {
+  background: #8aac2e;
+}
+
+/* ── Phase Tab ────────────────────────────────────── */
 .phase-tab {
   padding: var(--space-5) var(--space-7);
   font-family: var(--font-head);
@@ -1417,7 +1548,172 @@ label {
   flex: 1;
 }
 
-/* ── Combat Calculator ───────────────────────────────────────────────────── */
+/* ── UnitHeader ───────────────────────────────────────── */
+.unit-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.unit-name {
+  font-family: var(--font-head);
+  font-size: var(--text-label);
+  font-weight: 400;
+  color: var(--white);
+  flex: 1;
+  min-width: 0;
+}
+
+.unit-expand-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--space-2);
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.unit-expand-btn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+/* ── ModelList / ModelRow ─────────────────────────────── */
+.model-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.model-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.model-label {
+  font-family: var(--font-head);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+/* ── WoundStepper ─────────────────────────────────────── */
+.wound-stepper {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.wound-stepper__btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border-em);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+  border-radius: 6px;
+  line-height: 1;
+  padding: 0;
+}
+
+.wound-stepper__btn:hover:not(:disabled) {
+  border-color: var(--gold-dim);
+  color: var(--white);
+}
+
+.wound-stepper__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ── WeaponStatBlock ──────────────────────────────────── */
+.weapon-stat-block {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-2);
+  border-radius: 6px;
+  margin-bottom: var(--space-4);
+}
+
+.weapon-stat-block--empty {
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+  font-style: italic;
+}
+
+.weapon-stat-hit {
+  font-family: var(--font-head);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.weapon-stat-names {
+  font-family: var(--font-head);
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+  flex: 1;
+  min-width: 0;
+}
+
+.weapon-sep {
+  color: var(--border-em);
+}
+
+/* ── FactionGroupHeader ───────────────────────────────── */
+.faction-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-sub);
+}
+
+.faction-group-header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.faction-group-header__name {
+  font-family: var(--font-head);
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--white);
+}
+
+.faction-group-header__count {
+  font-family: var(--font-head);
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+}
+
+/* ── Combat Calculator ────────────────────────────────── */
 .calc-panel {
   background: var(--surface-1);
   border: 2px solid var(--border-em);
