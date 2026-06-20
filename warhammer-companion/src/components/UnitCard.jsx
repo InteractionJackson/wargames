@@ -70,19 +70,43 @@ function DiceValue({ val }) {
   return <>{str}</>;
 }
 
-function ModelRow({ index }) {
+function ModelRow({ index, maxWounds, currentWounds, onDecrement, onIncrement }) {
+  const isDead = currentWounds === 0;
   return (
-    <div className="model-row">
+    <div className={`model-row${isDead ? ' model-row--dead' : ''}`}>
       <span className="model-row-index">#{index + 1}</span>
+      {maxWounds === 1 ? (
+        <button
+          className="model-row-kill"
+          onClick={isDead ? onIncrement : onDecrement}
+          title={isDead ? 'Restore model' : 'Remove model'}
+        >
+          {isDead ? '↩' : '✕'}
+        </button>
+      ) : (
+        <div className="model-row-stepper">
+          <button onClick={onDecrement} disabled={isDead} className="model-row-btn">−</button>
+          <span className="model-row-wounds">{currentWounds}W</span>
+          <button onClick={onIncrement} disabled={currentWounds >= maxWounds} className="model-row-btn">+</button>
+        </div>
+      )}
     </div>
   );
 }
 
-function ModelList({ modelCount }) {
+function ModelList({ unit, dispatch }) {
+  const modelWounds = unit.modelWounds ?? Array.from({ length: unit.modelCount ?? 1 }, () => unit.wounds);
   return (
     <div className="model-list">
-      {Array.from({ length: modelCount }).map((_, i) => (
-        <ModelRow key={i} index={i} />
+      {modelWounds.map((w, i) => (
+        <ModelRow
+          key={i}
+          index={i}
+          maxWounds={unit.wounds}
+          currentWounds={w}
+          onDecrement={() => dispatch({ type: 'SET_MODEL_WOUNDS', instanceId: unit.instanceId, modelIndex: i, wounds: w - 1 })}
+          onIncrement={() => dispatch({ type: 'SET_MODEL_WOUNDS', instanceId: unit.instanceId, modelIndex: i, wounds: w + 1 })}
+        />
       ))}
     </div>
   );
@@ -190,20 +214,13 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
   const [expanded, setExpanded] = useState(false);
   const [editingNotes, setEditingNotes] = useState(false);
 
-  const woundPct = unit.currentWounds / unit.wounds;
+  const modelWounds = unit.modelWounds ?? [];
+  const totalMaxWounds = unit.wounds * (unit.modelCount ?? 1);
+  const woundPct = totalMaxWounds > 0 ? unit.currentWounds / totalMaxWounds : 0;
   const woundColor =
     woundPct > 0.6 ? 'var(--warning)' : woundPct > 0.3 ? '#c0a030' : 'var(--danger)';
 
   const highlightedStats = PHASE_STAT_HIGHLIGHTS[currentPhase] || [];
-
-  function handleWoundChange(delta) {
-    dispatch({ type: 'SET_WOUNDS', instanceId: unit.instanceId, wounds: unit.currentWounds + delta });
-  }
-
-  function handleDirectWound(e) {
-    const v = parseInt(e.target.value, 10);
-    if (!isNaN(v)) dispatch({ type: 'SET_WOUNDS', instanceId: unit.instanceId, wounds: v });
-  }
 
   // In shooting/fight phases, dim weapons that aren't relevant to the phase
   function weaponRowClass(w) {
@@ -213,6 +230,9 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
     if (currentPhase === 'Fight Phase'    && w.type === 'melee')  return 'weapon-row-highlight';
     return '';
   }
+
+  const modelsAlive = modelWounds.filter((w) => w > 0).length;
+  const modelsTotal = unit.modelCount ?? 1;
 
   return (
     <div className={`unit-card${unit.destroyed ? ' destroyed' : ''}`}>
@@ -239,28 +259,23 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
         </button>
       </div>
 
-      {/* Wounds bar */}
+      {/* Models alive summary bar */}
       {!unit.destroyed && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
           <span className="text-sm" style={{ fontFamily: 'var(--font-head)', color: 'var(--text-muted)', minWidth: '48px', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.05em' }}>
-            Wounds
+            Models
           </span>
           <div className="wounds-bar">
-            {Array.from({ length: unit.wounds }).map((_, i) => (
+            {Array.from({ length: modelsTotal }).map((_, i) => (
               <div
                 key={i}
-                className={`wound-pip${i >= unit.currentWounds ? ' lost' : ''}`}
-                style={i < unit.currentWounds ? { background: woundColor } : {}}
+                className={`wound-pip${i >= modelsAlive ? ' lost' : ''}`}
+                style={i < modelsAlive ? { background: woundColor } : {}}
               />
             ))}
           </div>
-          <div className="wounds-control">
-            <button className="btn btn-sm btn-icon" onClick={() => handleWoundChange(-1)} disabled={unit.currentWounds === 0}>−</button>
-            <input type="number" min={0} max={unit.wounds} value={unit.currentWounds} onChange={handleDirectWound} style={{ width: '44px', textAlign: 'center', padding: '2px 4px' }} />
-            <button className="btn btn-sm btn-icon" onClick={() => handleWoundChange(1)} disabled={unit.currentWounds === unit.wounds}>+</button>
-          </div>
           <span style={{ fontFamily: 'var(--font-head)', fontSize: '11px', color: woundColor }}>
-            {unit.currentWounds}/{unit.wounds}W
+            {modelsAlive}/{modelsTotal}
           </span>
         </div>
       )}
@@ -274,7 +289,7 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
           <div style={{ fontFamily: 'var(--font-head)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
             Models ({unit.modelCount})
           </div>
-          <ModelList modelCount={unit.modelCount} />
+          <ModelList unit={unit} dispatch={dispatch} />
         </div>
       )}
 
