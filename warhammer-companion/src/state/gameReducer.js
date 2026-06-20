@@ -107,9 +107,11 @@ export function gameReducer(state, action) {
       const battleUnits = {};
       const buildUnits = (army, owner) => {
         army.forEach((unit) => {
+          const modelCount = unit.modelCount ?? 1;
           battleUnits[unit.instanceId] = {
             ...unit, owner,
-            currentWounds: unit.wounds,
+            currentWounds: unit.wounds * modelCount,
+            modelWounds: Array.from({ length: modelCount }, () => unit.wounds),
             destroyed: false,
             notes: '',
             battleShocked: false,
@@ -211,6 +213,21 @@ export function gameReducer(state, action) {
       const unit = state.battleUnits[instanceId];
       if (!unit) return state;
       return { ...state, battleUnits: { ...state.battleUnits, [instanceId]: { ...unit, battleShocked } } };
+    }
+    case 'SET_MODEL_WOUNDS': {
+      const { instanceId, modelIndex, wounds } = action;
+      const unit = state.battleUnits[instanceId];
+      if (!unit) return state;
+      const newModelWounds = [...(unit.modelWounds || [])];
+      newModelWounds[modelIndex] = Math.max(0, Math.min(unit.wounds, wounds));
+      const totalWounds = newModelWounds.reduce((s, w) => s + w, 0);
+      return {
+        ...state,
+        battleUnits: {
+          ...state.battleUnits,
+          [instanceId]: { ...unit, modelWounds: newModelWounds, currentWounds: totalWounds, destroyed: totalWounds === 0 },
+        },
+      };
     }
     case 'SET_WOUNDS': {
       const { instanceId, wounds } = action;
