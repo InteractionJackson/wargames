@@ -180,22 +180,27 @@ function WeaponStatBlock({ unit, currentPhase }) {
   const hitLabel = `HIT ON ${skill}+`;
 
   if (weapons.length === 0) return (
-    <div className="weapon-stat-block weapon-stat-block--empty">
-      No {isShoot ? 'ranged' : 'melee'} weapons
+    <div className="roll-rows">
+      <div className="roll-row">
+        <span className="roll-row__label">{hitLabel}</span>
+        <span className="roll-row__weapons">No {isShoot ? 'ranged' : 'melee'} weapons</span>
+      </div>
     </div>
   );
 
   return (
-    <div className="weapon-stat-block">
-      <span className="weapon-stat-hit">{hitLabel}</span>
-      <span className="weapon-stat-names">
-        {weapons.map((w, i) => (
-          <span key={w.name}>
-            {i > 0 && <span className="weapon-sep"> · </span>}
-            {w.name}
-          </span>
-        ))}
-      </span>
+    <div className="roll-rows">
+      <div className="roll-row">
+        <span className="roll-row__label">{hitLabel}</span>
+        <span className="roll-row__weapons">
+          {weapons.map((w, i) => (
+            <span key={w.name}>
+              {i > 0 && <span className="weapon-sep"> · </span>}
+              {w.name}
+            </span>
+          ))}
+        </span>
+      </div>
     </div>
   );
 }

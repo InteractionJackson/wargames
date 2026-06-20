@@ -67,6 +67,8 @@ export default function GameScreen({ state, dispatch }) {
       <TopBar
         currentTurn={currentTurn}
         onQuit={handleQuit}
+        nextLabel={nextLabel()}
+        onNext={() => dispatch({ type: 'NEXT_PHASE' })}
       />
 
       <BattleHeader
@@ -88,8 +90,6 @@ export default function GameScreen({ state, dispatch }) {
 
       <PhaseNav
         currentPhaseIndex={currentPhaseIndex}
-        onNext={() => dispatch({ type: 'NEXT_PHASE' })}
-        nextLabel={nextLabel()}
       />
 
       <div className="main-content-inner">

@@ -12,13 +12,20 @@ function TurnIndicator({ currentTurn }) {
   );
 }
 
-export default function TopBar({ currentTurn, onQuit }) {
+function NextButton({ label, onClick }) {
+  return (
+    <button className="topbar-next-btn" onClick={onClick}>
+      {label}
+    </button>
+  );
+}
+
+export default function TopBar({ currentTurn, onQuit, nextLabel, onNext }) {
   return (
     <div className="top-bar">
       <QuitGameButton onQuit={onQuit} />
       <TurnIndicator currentTurn={currentTurn} />
-      {/* right-side spacer keeps TurnIndicator visually centred */}
-      <div className="top-bar__spacer" />
+      <NextButton label={nextLabel} onClick={onNext} />
     </div>
   );
 }

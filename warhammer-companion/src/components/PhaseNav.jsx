@@ -26,7 +26,7 @@ export function PhaseTab({ label, active, done }) {
   return <div className={cls}>{label}</div>;
 }
 
-export default function PhaseNav({ currentPhaseIndex, onNext, nextLabel }) {
+export default function PhaseNav({ currentPhaseIndex }) {
   return (
     <div className="phase-nav">
       <div className="phase-nav__tabs">
@@ -39,7 +39,6 @@ export default function PhaseNav({ currentPhaseIndex, onNext, nextLabel }) {
           />
         ))}
       </div>
-      <NextButton label={nextLabel} onClick={onNext} />
     </div>
   );
 }
