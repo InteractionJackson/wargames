@@ -381,6 +381,7 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
               </span>
             ))}
           </div>
+
         </div>
       )}
     </div>
