@@ -76,12 +76,26 @@ function PlayerPanel({ player, faction, army, confirmed, dispatch }) {
                 </div>
               )}
               {army.map((unit) => (
-                <div key={unit.instanceId} className="army-list-item">
+                <div key={unit.instanceId} className="army-list-item" style={{ flexWrap: 'wrap', gap: '4px' }}>
                   <span className={`badge ${TYPE_BADGE[unit.type] || 'badge-infantry'}`}>
                     {unit.type.slice(0, 3).toUpperCase()}
                   </span>
                   <span className="army-list-item-name">{unit.name}</span>
                   <span className="army-list-item-pts">{unit.points} pts</span>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                    Models:
+                    <input
+                      type="number"
+                      min={1}
+                      max={30}
+                      value={unit.modelCount}
+                      onChange={(e) => {
+                        const v = Math.max(1, Math.min(30, parseInt(e.target.value, 10) || 1));
+                        dispatch({ type: 'SET_MODEL_COUNT', player, instanceId: unit.instanceId, modelCount: v });
+                      }}
+                      style={{ width: '48px', textAlign: 'center', padding: '2px 4px' }}
+                    />
+                  </label>
                   <button
                     className="btn btn-sm btn-danger"
                     onClick={() =>

@@ -68,7 +68,7 @@ function RollStep({ label, rollTarget, diceCount, isEstimate, accentColor, tip }
 }
 
 export default function CombatModal({ attacker, weapon, defender, phase, onClose }) {
-  const [modelCount, setModelCount] = useState(5);
+  const [modelCount, setModelCount] = useState(attacker.modelCount ?? 5);
   const [woundsDealt, setWoundsDealt] = useState(0);
 
   const isShoot = phase === 'Shooting Phase';

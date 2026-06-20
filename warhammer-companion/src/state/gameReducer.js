@@ -64,9 +64,19 @@ export function gameReducer(state, action) {
     case 'ADD_UNIT': {
       const { player, unit } = action;
       const instanceId = makeInstanceId(unit.id);
-      const entry = { ...unit, instanceId };
+      const entry = { ...unit, instanceId, modelCount: unit.modelCount ?? 5 };
       const key = player === 1 ? 'player1Army' : 'player2Army';
       return { ...state, [key]: [...state[key], entry] };
+    }
+    case 'SET_MODEL_COUNT': {
+      const { player, instanceId, modelCount } = action;
+      const key = player === 1 ? 'player1Army' : 'player2Army';
+      return {
+        ...state,
+        [key]: state[key].map((u) =>
+          u.instanceId === instanceId ? { ...u, modelCount } : u
+        ),
+      };
     }
     case 'REMOVE_UNIT': {
       const { player, instanceId } = action;

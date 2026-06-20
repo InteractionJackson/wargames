@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600&family=Inter:wght@400;600;700&display=swap');
 
-/* ── Reset & Base ─────────────────────────────────────── */
+/* ── Reset & Base ───────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -42,7 +42,7 @@
   --text-caption: 12px;   /* captions */
   --text-micro:   11px;   /* model labels, Body/Caption */
 
-  /* ── Spacing (8px base unit) ─────────────────────────── */
+  /* ── Spacing (8px base unit) ───────────────────────── */
   --space-1:  2px;
   --space-2:  4px;
   --space-3:  6px;
@@ -56,14 +56,14 @@
   --space-11: 48px;
   --space-12: 64px;
 
-  /* ── Border Radius ───────────────────────────────────── */
+  /* ── Border Radius ───────────────────────────────── */
   --radius-micro: 1px;   /* fine-grained elements */
   --radius-std:   4px;   /* buttons, inputs, badges */
   --radius-card:  5px;   /* standard card containers */
   --radius-nav:   6px;   /* navigation, larger interactive */
   --radius-lg:    8px;   /* featured cards, modals */
 
-  /* ── Elevation ───────────────────────────────────────── */
+  /* ── Elevation ─────────────────────────────────────── */
   --shadow-0: none;
   --shadow-1: rgba(23,23,23,0.06) 0px 3px 6px;
   --shadow-2: rgba(23,23,23,0.08) 0px 15px 35px;
@@ -90,12 +90,12 @@ h1, h2, h3, h4, h5, h6,
   text-transform: uppercase;
 }
 
-/* ── Scrollbar ────────────────────────────────────────── */
+/* ── Scrollbar ─────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--surface-1); }
 ::-webkit-scrollbar-thumb { background: var(--border-em); }
 
-/* ── Layout ───────────────────────────────────────────── */
+/* ── Layout ─────────────────────────────────────────────────── */
 .app-root {
   min-height: 100vh;
   display: flex;
@@ -140,7 +140,7 @@ h1, h2, h3, h4, h5, h6,
   }
 }
 
-/* ── Phase Page (Army Builder & Mission Setup) ─────── */
+/* ── Phase Page (Army Builder & Mission Setup) ────── */
 .phase-page {
   max-width: 1440px;
   margin: 0 auto;
@@ -180,7 +180,7 @@ h1, h2, h3, h4, h5, h6,
   gap: var(--space-7);
 }
 
-/* ── Back button ──────────────────────────────────── */
+/* ── Back button ─────────────────────────────────────── */
 .back-btn {
   display: inline-flex;
   align-items: center;
@@ -196,7 +196,7 @@ h1, h2, h3, h4, h5, h6,
 }
 .back-btn:hover { color: var(--white); }
 
-/* ── Next button with arrow ───────────────────────── */
+/* ── Next button with arrow ─────────────────────────── */
 .btn-next {
   display: inline-flex;
   align-items: center;
@@ -204,7 +204,7 @@ h1, h2, h3, h4, h5, h6,
   padding: var(--space-5) var(--space-7);
 }
 
-/* ── Army Builder ─────────────────────────────────── */
+/* ── Army Builder ────────────────────────────────────── */
 .army-section {
   padding: var(--space-6) var(--space-7);
   border-top: 1px solid var(--border-sub);
@@ -270,7 +270,7 @@ h1, h2, h3, h4, h5, h6,
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Mission Setup layout ─────────────────────────── */
+/* ── Mission Setup layout ───────────────────────────── */
 .mission-layout {
   display: grid;
   grid-template-columns: 1fr 300px;
@@ -349,7 +349,7 @@ h1, h2, h3, h4, h5, h6,
   flex: 1;
 }
 
-/* ── Mission sidebar summary ──────────────────────── */
+/* ── Mission sidebar summary ────────────────────────── */
 .mission-sidebar {
   padding-top: 0;
 }
@@ -402,15 +402,15 @@ h1, h2, h3, h4, h5, h6,
   justify-content: center;
 }
 
-/* ── Battle Tracker Page ──────────────────────────── */
+/* ── Battle Tracker Page ─────────────────────────────── */
 .battle-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* ── TopBar ───────────────────────────────────────── */
-.top-bar {
+/* Battle Header */
+.battle-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -597,25 +597,25 @@ h1, h2, h3, h4, h5, h6,
 
 .score-stack {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-9);
+  gap: var(--space-6);
 }
 
-.score-item {
+.battle-scoreboard__score-item {
   display: flex;
   align-items: center;
   gap: var(--space-4);
   width: 132px;
 }
 
-.score-item__label {
-  font-family: var(--font-body);
-  font-size: var(--text-label);
-  font-weight: 700;
+.battle-scoreboard__score-label {
+  font-family: var(--font-head);
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
 }
 
-.score-item__value {
+.battle-scoreboard__score-value {
   font-family: var(--font-head);
   font-size: var(--text-section);
   font-weight: 600;
@@ -638,7 +638,7 @@ h1, h2, h3, h4, h5, h6,
   gap: var(--space-2);
 }
 
-.round-counter__num {
+.battle-round-circle__num {
   font-family: var(--font-head);
   font-size: var(--text-hero);
   font-weight: 600;
@@ -647,17 +647,16 @@ h1, h2, h3, h4, h5, h6,
   font-variant-numeric: tabular-nums;
 }
 
-.round-counter__label {
-  font-family: var(--font-body);
-  font-size: var(--text-label);
-  font-weight: 700;
-  color: var(--white);
-  text-align: center;
-  width: 100%;
+.battle-round-circle__label {
+  font-family: var(--font-head);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
 }
 
-/* ── PhaseNav ─────────────────────────────────────── */
-.phase-nav {
+/* Phase Tabs */
+.phase-tabs-bar {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -667,7 +666,7 @@ h1, h2, h3, h4, h5, h6,
   gap: var(--space-4);
 }
 
-.phase-nav__tabs {
+.phase-tabs {
   display: flex;
   gap: var(--space-4);
 }
@@ -715,7 +714,7 @@ h1, h2, h3, h4, h5, h6,
   border-color: var(--gold-dim);
 }
 
-/* ── Panel / Card ─────────────────────────────────────── */
+/* ── Panel / Card ───────────────────────────────────────────────── */
 .panel {
   background: var(--surface-1);
   border: 1px solid var(--border-sub);
@@ -748,7 +747,7 @@ h1, h2, h3, h4, h5, h6,
   font-weight: 300;
 }
 
-/* ── Buttons ──────────────────────────────────────────── */
+/* ── Buttons ──────────────────────────────────────────────────── */
 .btn {
   font-family: var(--font-head);
   font-size: var(--text-label);
@@ -810,7 +809,7 @@ h1, h2, h3, h4, h5, h6,
   font-family: var(--font-body);
 }
 
-/* ── Form Controls ────────────────────────────────────── */
+/* ── Form Controls ─────────────────────────────────────────────── */
 select, input[type="number"], input[type="text"], textarea {
   background: var(--surface-2);
   border: 1px solid var(--border-em);
@@ -856,7 +855,7 @@ label {
   min-width: 120px;
 }
 
-/* ── Badges / Pills ───────────────────────────────────── */
+/* ── Badges / Pills ─────────────────────────────────────────────── */
 .badge {
   font-family: var(--font-head);
   font-size: var(--text-caption);
@@ -879,7 +878,7 @@ label {
 .badge-gold       { background: #2a2010; color: var(--gold); border: 1px solid var(--gold-dim); }
 .badge-stratagem  { background: #1a2830; color: #60b8e0; border: 1px solid #2a6888; }
 
-/* ── CP Bar ───────────────────────────────────────────── */
+/* ── CP Bar ──────────────────────────────────────────────────────── */
 .cp-bar {
   display: flex;
   align-items: center;
@@ -958,7 +957,7 @@ label {
   margin-left: var(--space-3);
 }
 
-/* ── Stratagem Panel ──────────────────────────────────── */
+/* ── Stratagem Panel ─────────────────────────────────────────────── */
 .stratagem-overlay {
   position: fixed;
   inset: 0;
@@ -1163,7 +1162,7 @@ label {
   gap: var(--space-3);
 }
 
-/* ── Stat Block ───────────────────────────────────────── */
+/* ── Stat Block ──────────────────────────────────────────────────────── */
 .stat-row {
   display: flex;
   gap: 0;
@@ -1202,7 +1201,7 @@ label {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Weapon Table ─────────────────────────────────────── */
+/* ── Weapon Table ───────────────────────────────────────────────────── */
 .weapon-table {
   width: 100%;
   border-collapse: collapse;
@@ -1236,7 +1235,7 @@ label {
   background: var(--surface-2);
 }
 
-/* ── Wounds ───────────────────────────────────────────── */
+/* ── Wounds ──────────────────────────────────────────────────────────── */
 .wounds-control {
   display: flex;
   align-items: center;
@@ -1263,7 +1262,7 @@ label {
   border-color: var(--border-sub);
 }
 
-/* ── Points Counter ───────────────────────────────────── */
+/* ── Points Counter ─────────────────────────────────────────────── */
 .points-total {
   font-family: var(--font-head);
   font-size: var(--text-body-lg);
@@ -1280,7 +1279,7 @@ label {
   letter-spacing: 0.06em;
 }
 
-/* ── Stat highlight (active phase) ───────────────────── */
+/* ── Stat highlight (active phase) ─────────────────────── */
 .stat-cell-highlight {
   background: rgba(201, 168, 76, 0.12);
   border-right-color: var(--gold-dim);
@@ -1295,7 +1294,7 @@ label {
   color: var(--gold);
 }
 
-/* ── Weapon row states ────────────────────────────────── */
+/* ── Weapon row states ───────────────────────────────────────────── */
 .weapon-row-dim td {
   opacity: 0.3;
 }
@@ -1304,7 +1303,7 @@ label {
   background: rgba(201, 168, 76, 0.06);
 }
 
-/* ── Phase hint strip ─────────────────────────────────── */
+/* ── Phase hint strip ───────────────────────────────────────────── */
 .phase-hint {
   display: flex;
   align-items: baseline;
@@ -1352,7 +1351,7 @@ label {
   white-space: nowrap;
 }
 
-/* ── Tooltip ──────────────────────────────────────────── */
+/* ── Tooltip ────────────────────────────────────────────────────── */
 .tooltip-wrap {
   position: relative;
   display: inline-block;
@@ -1385,7 +1384,7 @@ label {
   border-bottom: 1px dotted var(--text-muted);
 }
 
-/* ── Phase Banner ─────────────────────────────────────── */
+/* ── Phase Banner ───────────────────────────────────────────────── */
 .phase-banner {
   background: var(--surface-1);
   border: 2px solid var(--gold);
@@ -1425,7 +1424,7 @@ label {
   letter-spacing: -0.22px;
 }
 
-/* ── Army Builder layout ──────────────────────────────── */
+/* ── Army Builder layout ────────────────────────────────────────── */
 .army-builder-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1526,7 +1525,7 @@ label {
   flex: 1;
 }
 
-/* ── Battle Tracker layout ────────────────────────────── */
+/* ── Battle Tracker layout ────────────────────────────────────────── */
 .battle-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1817,7 +1816,7 @@ label {
   letter-spacing: 0.06em;
 }
 
-/* ── Mission Setup ────────────────────────────────────── */
+/* ── Mission Setup ────────────────────────────────────────────────────── */
 .mission-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1864,7 +1863,7 @@ label {
   line-height: 1.5;
 }
 
-/* ── Phase Guide ──────────────────────────────────────── */
+/* ── Phase Guide ────────────────────────────────────────────────────────── */
 .phase-guide {
   background: var(--surface-2);
   border: 1px solid var(--border-em);
@@ -1899,7 +1898,7 @@ label {
   line-height: 1.5;
 }
 
-/* ── Game Summary ─────────────────────────────────────── */
+/* ── Game Summary ───────────────────────────────────────────────────────── */
 .summary-panel {
   max-width: 700px;
   margin: 0 auto;
@@ -1927,7 +1926,7 @@ label {
   margin-top: var(--space-3);
 }
 
-/* ── Dividers & misc ──────────────────────────────────── */
+/* ── Dividers & misc ──────────────────────────────────────────────── */
 .divider {
   border: none;
   border-top: 1px solid var(--border-sub);
@@ -1956,7 +1955,7 @@ label {
 .gap-16 { gap: var(--space-7); }
 .flex-wrap { flex-wrap: wrap; }
 
-/* ── Combat Modal ─────────────────────────────────────── */
+/* ── Combat Modal ───────────────────────────────────────────────────────── */
 .cm-overlay {
   position: fixed;
   inset: 0;
@@ -2293,4 +2292,29 @@ label {
   color: var(--danger);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+/* Model list */
+.model-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.model-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-sub);
+  border-radius: 50%;
+  font-family: var(--font-head);
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.model-row-index {
+  line-height: 1;
 }
