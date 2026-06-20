@@ -8,7 +8,6 @@ const TYPE_BADGE = {
   Monster:   'badge-monster',
 };
 
-// Stat labels shown in the expanded block, with beginner-friendly tooltip text
 const STAT_TIPS = {
   M:   'Move — how far this unit can move each turn (in inches)',
   T:   'Toughness — how hard the unit is to wound',
@@ -22,7 +21,6 @@ const STAT_TIPS = {
   S:   'Strength — used to calculate wound rolls against enemy Toughness',
 };
 
-// Weapon table column tooltips
 const WEAPON_COL_TIPS = {
   Rng:   'Range — maximum distance the weapon can fire (inches)',
   A:     'Attacks — number of dice rolled when this weapon fires or strikes',
@@ -32,7 +30,6 @@ const WEAPON_COL_TIPS = {
   D:     'Damage — wounds dealt per successful hit that isn\'t saved',
 };
 
-// Which stat cells to highlight per phase
 const PHASE_STAT_HIGHLIGHTS = {
   'Movement Phase': ['M'],
   'Shooting Phase': ['BS'],
@@ -42,7 +39,6 @@ const PHASE_STAT_HIGHLIGHTS = {
   'Morale Phase':   ['LD'],
 };
 
-// Dice notation tooltip map
 const DICE_TIPS = {
   'D3':    'Roll one D6: 1-2 = 1, 3-4 = 2, 5-6 = 3',
   'D6':    'Roll one six-sided die (1–6)',
@@ -70,11 +66,144 @@ function DiceValue({ val }) {
   return <>{str}</>;
 }
 
-function PhaseHint({ unit, currentPhase }) {
+// ── UnitHeader ────────────────────────────────────────────────────────────────
+
+function UnitHeader({ unit, expanded, onToggle, activeStratagems }) {
+  return (
+    <div className="unit-header">
+      <span className={`badge ${TYPE_BADGE[unit.type] || 'badge-infantry'}`}>{unit.type}</span>
+      <span className="unit-name">{unit.name}</span>
+      {unit.invulnSave && (
+        <Tooltip text={`Invulnerable save — roll ${unit.invulnSave}+ to ignore wounds regardless of AP`}>
+          <span className="badge badge-gold badge-inv" style={{ cursor: 'help' }}>
+            {unit.invulnSave}+<span className="abbr">INV</span>
+          </span>
+        </Tooltip>
+      )}
+      {unit.battleShocked && <span className="badge badge-shocked">Battle Shocked</span>}
+      {activeStratagems.map((s, i) => (
+        <span key={i} className="badge badge-stratagem">⚡ {s.badgeLabel}</span>
+      ))}
+      {unit.destroyed && <span className="badge badge-destroyed">Destroyed</span>}
+      <button
+        className="unit-expand-btn"
+        onClick={onToggle}
+        aria-label={expanded ? 'Collapse' : 'Expand'}
+      >
+        <svg viewBox="0 0 10 6" width="10" height="6" fill="currentColor" aria-hidden="true"
+          style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+          <path d="M0 0l5 6 5-6z" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+// ── WoundPips ─────────────────────────────────────────────────────────────────
+
+function WoundPips({ total, current }) {
+  const woundPct = current / total;
+  const color = woundPct > 0.6 ? 'var(--warning)' : woundPct > 0.3 ? '#c0a030' : 'var(--danger)';
+  return (
+    <div className="wounds-bar">
+      {Array.from({ length: total }).map((_, i) => (
+        <div
+          key={i}
+          className={`wound-pip${i >= current ? ' lost' : ''}`}
+          style={i < current ? { background: color } : {}}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── WoundStepper ──────────────────────────────────────────────────────────────
+
+function WoundStepper({ current, total, onDecrement, onIncrement }) {
+  return (
+    <div className="wound-stepper">
+      <button className="wound-stepper__btn" onClick={onDecrement} disabled={current === 0}>−</button>
+      <button className="wound-stepper__btn" onClick={onIncrement} disabled={current === total}>+</button>
+    </div>
+  );
+}
+
+// ── ModelRow ──────────────────────────────────────────────────────────────────
+
+function ModelRow({ label, total, current, onDecrement, onIncrement }) {
+  return (
+    <div className="model-row">
+      <span className="model-label">{label}</span>
+      <WoundPips total={total} current={current} />
+      <WoundStepper
+        current={current}
+        total={total}
+        onDecrement={onDecrement}
+        onIncrement={onIncrement}
+      />
+    </div>
+  );
+}
+
+// ── ModelList ─────────────────────────────────────────────────────────────────
+
+function ModelList({ unit, dispatch }) {
+  if (unit.destroyed) return null;
+  return (
+    <div className="model-list">
+      <ModelRow
+        label={unit.name.toUpperCase()}
+        total={unit.wounds}
+        current={unit.currentWounds}
+        onDecrement={() => dispatch({ type: 'SET_WOUNDS', instanceId: unit.instanceId, wounds: unit.currentWounds - 1 })}
+        onIncrement={() => dispatch({ type: 'SET_WOUNDS', instanceId: unit.instanceId, wounds: unit.currentWounds + 1 })}
+      />
+    </div>
+  );
+}
+
+// ── WeaponStatBlock ───────────────────────────────────────────────────────────
+
+function WeaponStatBlock({ unit, currentPhase }) {
   if (!currentPhase || unit.destroyed) return null;
 
-  const ranged = unit.weapons.filter((w) => w.type === 'ranged');
-  const melee  = unit.weapons.filter((w) => w.type === 'melee');
+  const isShoot = currentPhase === 'Shooting Phase';
+  const isFight = currentPhase === 'Fight Phase';
+
+  if (!isShoot && !isFight) return null;
+
+  const weapons = isShoot
+    ? unit.weapons.filter((w) => w.type === 'ranged')
+    : unit.weapons.filter((w) => w.type === 'melee');
+
+  const skill = isShoot ? unit.ballisticSkill : unit.weaponSkill;
+  const hitLabel = `HIT ON ${skill}+`;
+
+  if (weapons.length === 0) return (
+    <div className="weapon-stat-block weapon-stat-block--empty">
+      No {isShoot ? 'ranged' : 'melee'} weapons
+    </div>
+  );
+
+  return (
+    <div className="weapon-stat-block">
+      <span className="weapon-stat-hit">{hitLabel}</span>
+      <span className="weapon-stat-names">
+        {weapons.map((w, i) => (
+          <span key={w.name}>
+            {i > 0 && <span className="weapon-sep"> · </span>}
+            {w.name}
+          </span>
+        ))}
+      </span>
+    </div>
+  );
+}
+
+// ── Movement / Charge / Command hints ────────────────────────────────────────
+
+function PhaseHint({ unit, currentPhase }) {
+  if (!currentPhase || unit.destroyed) return null;
 
   if (currentPhase === 'Movement Phase') {
     return (
@@ -84,21 +213,6 @@ function PhaseHint({ unit, currentPhase }) {
         <span className="phase-hint-sub">
           Advance: +<Tooltip text="Roll one D6 and add the result to your Move distance this turn"><span className="abbr">D6</span></Tooltip>"
           {' '}· Fall Back: full Move, can't shoot
-        </span>
-      </div>
-    );
-  }
-
-  if (currentPhase === 'Shooting Phase') {
-    if (ranged.length === 0) return (
-      <div className="phase-hint phase-hint-dim">No ranged weapons</div>
-    );
-    return (
-      <div className="phase-hint">
-        <span className="phase-hint-label">Hit on</span>
-        <span className="phase-hint-value">{unit.ballisticSkill}+</span>
-        <span className="phase-hint-sub">
-          {ranged.map((w) => w.name).join(' · ')}
         </span>
       </div>
     );
@@ -114,21 +228,6 @@ function PhaseHint({ unit, currentPhase }) {
           </Tooltip>"
         </span>
         <span className="phase-hint-sub">Must beat the gap · Move up to {unit.move}" if failed</span>
-      </div>
-    );
-  }
-
-  if (currentPhase === 'Fight Phase') {
-    if (melee.length === 0) return (
-      <div className="phase-hint phase-hint-dim">No melee weapons</div>
-    );
-    return (
-      <div className="phase-hint">
-        <span className="phase-hint-label">Hit on</span>
-        <span className="phase-hint-value">{unit.weaponSkill}+</span>
-        <span className="phase-hint-sub">
-          {melee.map((w) => w.name).join(' · ')}
-        </span>
       </div>
     );
   }
@@ -152,42 +251,16 @@ function PhaseHint({ unit, currentPhase }) {
     );
   }
 
-  if (currentPhase === 'Morale Phase') {
-    return (
-      <div className="phase-hint">
-        <span className="phase-hint-label">Battle Shock</span>
-        <span className="phase-hint-value">{unit.leadership}+</span>
-        <span className="phase-hint-sub">
-          Roll <Tooltip text="Roll two D6 and add them together (2–12)"><span className="abbr">2D6</span></Tooltip>
-          , pass on {unit.leadership} or less
-        </span>
-      </div>
-    );
-  }
-
   return null;
 }
 
+// ── UnitCard ──────────────────────────────────────────────────────────────────
+
 export default function UnitCard({ unit, dispatch, isMoralePhase = false, currentPhase = null, activeStratagems = [] }) {
   const [expanded, setExpanded] = useState(false);
-  const [editingNotes, setEditingNotes] = useState(false);
-
-  const woundPct = unit.currentWounds / unit.wounds;
-  const woundColor =
-    woundPct > 0.6 ? 'var(--warning)' : woundPct > 0.3 ? '#c0a030' : 'var(--danger)';
 
   const highlightedStats = PHASE_STAT_HIGHLIGHTS[currentPhase] || [];
 
-  function handleWoundChange(delta) {
-    dispatch({ type: 'SET_WOUNDS', instanceId: unit.instanceId, wounds: unit.currentWounds + delta });
-  }
-
-  function handleDirectWound(e) {
-    const v = parseInt(e.target.value, 10);
-    if (!isNaN(v)) dispatch({ type: 'SET_WOUNDS', instanceId: unit.instanceId, wounds: v });
-  }
-
-  // In shooting/fight phases, dim weapons that aren't relevant to the phase
   function weaponRowClass(w) {
     if (currentPhase === 'Shooting Phase' && w.type === 'melee') return 'weapon-row-dim';
     if (currentPhase === 'Fight Phase'    && w.type === 'ranged') return 'weapon-row-dim';
@@ -198,82 +271,22 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
 
   return (
     <div className={`unit-card${unit.destroyed ? ' destroyed' : ''}`}>
-      {/* Header row */}
-      <div className="unit-card-header">
-        <span className={`badge ${TYPE_BADGE[unit.type] || 'badge-infantry'}`}>{unit.type}</span>
-        <span className="unit-card-name">{unit.name}</span>
-        {unit.invulnSave && (
-          <Tooltip text={`Invulnerable save — roll ${unit.invulnSave}+ to ignore wounds regardless of AP`}>
-            <span className="badge badge-gold" style={{ cursor: 'help' }}>{unit.invulnSave}+<span className="abbr">INV</span></span>
-          </Tooltip>
-        )}
-        {unit.battleShocked && <span className="badge badge-shocked">Battle Shocked</span>}
-        {activeStratagems.map((s, i) => (
-          <span key={i} className="badge badge-stratagem">⚡ {s.badgeLabel}</span>
-        ))}
-        {unit.destroyed && <span className="badge badge-destroyed">Destroyed</span>}
-        <button
-          className="btn btn-sm btn-icon"
-          style={{ marginLeft: 'auto', color: 'var(--text-muted)' }}
-          onClick={() => setExpanded((e) => !e)}
-        >
-          {expanded ? '▲' : '▼'}
-        </button>
-      </div>
+      <UnitHeader
+        unit={unit}
+        expanded={expanded}
+        onToggle={() => setExpanded((v) => !v)}
+        activeStratagems={activeStratagems}
+      />
 
-      {/* Wounds bar */}
-      {!unit.destroyed && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-          <span className="text-sm" style={{ fontFamily: 'var(--font-head)', color: 'var(--text-muted)', minWidth: '48px', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.05em' }}>
-            Wounds
-          </span>
-          <div className="wounds-bar">
-            {Array.from({ length: unit.wounds }).map((_, i) => (
-              <div
-                key={i}
-                className={`wound-pip${i >= unit.currentWounds ? ' lost' : ''}`}
-                style={i < unit.currentWounds ? { background: woundColor } : {}}
-              />
-            ))}
-          </div>
-          <div className="wounds-control">
-            <button className="btn btn-sm btn-icon" onClick={() => handleWoundChange(-1)} disabled={unit.currentWounds === 0}>−</button>
-            <input type="number" min={0} max={unit.wounds} value={unit.currentWounds} onChange={handleDirectWound} style={{ width: '44px', textAlign: 'center', padding: '2px 4px' }} />
-            <button className="btn btn-sm btn-icon" onClick={() => handleWoundChange(1)} disabled={unit.currentWounds === unit.wounds}>+</button>
-          </div>
-          <span style={{ fontFamily: 'var(--font-head)', fontSize: '11px', color: woundColor }}>
-            {unit.currentWounds}/{unit.wounds}W
-          </span>
-        </div>
-      )}
+      <ModelList unit={unit} dispatch={dispatch} />
 
-      {/* Phase hint — visible without expanding */}
+      <WeaponStatBlock unit={unit} currentPhase={currentPhase} />
+
       <PhaseHint unit={unit} currentPhase={currentPhase} />
 
-      {/* Notes */}
-      <div>
-        {editingNotes ? (
-          <textarea
-            value={unit.notes}
-            onChange={(e) => dispatch({ type: 'SET_NOTES', instanceId: unit.instanceId, notes: e.target.value })}
-            onBlur={() => setEditingNotes(false)}
-            placeholder="Notes (aura effects, mission markers, stratagems…)"
-            style={{ fontSize: '12px', minHeight: '48px' }}
-            autoFocus
-          />
-        ) : (
-          <div
-            onClick={() => setEditingNotes(true)}
-            style={{ padding: '4px 6px', background: 'var(--surface-2)', border: '1px dashed var(--border-sub)', fontSize: '12px', color: unit.notes ? 'var(--text)' : 'var(--text-muted)', cursor: 'text', minHeight: '26px' }}
-          >
-            {unit.notes || 'Click to add notes…'}
-          </div>
-        )}
-      </div>
-
-      {/* Battle Shock toggle — Morale Phase only */}
+      {/* Battle Shock toggle — Command Phase only */}
       {isMoralePhase && !unit.destroyed && (
-        <div style={{ marginTop: '6px' }}>
+        <div style={{ marginTop: '8px' }}>
           <button
             className={`btn btn-sm${unit.battleShocked ? ' btn-danger' : ''}`}
             style={{ width: '100%', justifyContent: 'center' }}
@@ -284,12 +297,10 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
         </div>
       )}
 
-      {/* Expanded stat block */}
       {expanded && (
         <div style={{ marginTop: '8px' }}>
           <hr className="divider" />
 
-          {/* Stat row */}
           <div className="stat-row">
             {[
               { label: 'M',  value: `${unit.move}"` },
@@ -312,7 +323,6 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
             ))}
           </div>
 
-          {/* Weapons */}
           <table className="weapon-table">
             <thead>
               <tr>
@@ -345,10 +355,9 @@ export default function UnitCard({ unit, dispatch, isMoralePhase = false, curren
             </tbody>
           </table>
 
-          {/* Keywords */}
           <div style={{ marginTop: '6px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
             {unit.keywords.map((kw) => (
-              <span key={kw} style={{ fontFamily: 'var(--font-head)', fontSize: '10px', color: 'var(--text-muted)', background: 'var(--surface-2)', border: '1px solid var(--border-sub)', padding: '1px 5px', borderRadius: '2px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <span key={kw} style={{ fontFamily: 'var(--font-head)', fontSize: '10px', color: 'var(--text-muted)', background: 'var(--surface-2)', border: '1px solid var(--border-sub)', padding: '1px 5px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 {kw}
               </span>
             ))}
